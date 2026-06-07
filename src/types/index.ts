@@ -21,7 +21,7 @@ export interface Order {
 	customerEmail: string;
 	deliveryMethod: "nova_poshta" | "ukr_poshta" | "pickup";
 	deliveryAddress: string;
-	paymentMethod: "cash_on_delivery" | "card";
+	paymentMethod: "cash_on_delivery" | "iban";
 	items: CartItem[];
 	totalAmount: number;
 	status: "new" | "processing" | "shipped" | "completed" | "cancelled";

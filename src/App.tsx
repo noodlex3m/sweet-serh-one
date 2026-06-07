@@ -36,7 +36,7 @@ function App() {
 	>("nova_poshta");
 	const [address, setAddress] = useState("");
 	const [paymentMethod, setPaymentMethod] = useState<
-		"cash_on_delivery" | "card"
+		"cash_on_delivery" | "iban"
 	>("cash_on_delivery");
 
 	// Order submission state
@@ -516,14 +516,14 @@ function App() {
 												value={paymentMethod}
 												onChange={(e) =>
 													setPaymentMethod(
-														e.target.value as "cash_on_delivery" | "card",
+														e.target.value as "cash_on_delivery" | "iban",
 													)
 												}
 											>
 												<option value="cash_on_delivery">
 													При отриманні (післяплата)
 												</option>
-												<option value="card">Оплата за IBAN</option>
+												<option value="iban">Оплата за IBAN</option>
 											</select>
 										</div>
 

@@ -364,7 +364,7 @@ export default function Admin() {
                         }</p>
                         <p><strong>Адреса:</strong> {order.deliveryAddress}</p>
                         <p><strong>Оплата:</strong> {
-                          order.paymentMethod === 'cash_on_delivery' ? 'При отриманні' : 'Карткою онлайн'
+                          order.paymentMethod === 'cash_on_delivery' ? 'При отриманні (післяплата)' : 'Оплата за IBAN'
                         }</p>
                       </div>
 
