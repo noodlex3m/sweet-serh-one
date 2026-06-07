@@ -1,121 +1,468 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import heroImg from './assets/hero.png'
+import { useState, useMemo, useEffect } from 'react'
+import { Routes, Route, Link, useLocation } from 'react-router-dom'
+import type { Product, CartItem, Order } from './types'
+import productsData from './data/products.json'
 import './App.css'
+import { db } from './services/firebase'
+import { collection, addDoc, doc, getDoc, getDocs } from 'firebase/firestore'
+import { useAuth } from './context/AuthContext'
+
+// Import pages
+import Home from './pages/Home'
+import Admin from './pages/Admin'
+import Account from './pages/Account'
 
 function App() {
-  const [count, setCount] = useState(0)
+  const { currentUser } = useAuth()
+  const location = useLocation()
+  
+  // Products list state (loaded from cache / Firestore / JSON)
+  const [products, setProducts] = useState<Product[]>([])
+  
+  // Cart state
+  const [cart, setCart] = useState<CartItem[]>([])
+  const [isCartOpen, setIsCartOpen] = useState(false)
+  
+  // Filter & Search states
+  const [selectedCategory, setSelectedCategory] = useState<string>('Всі')
+  const [searchQuery, setSearchQuery] = useState<string>('')
+  
+  // Checkout Form states
+  const [name, setName] = useState('')
+  const [phone, setPhone] = useState('')
+  const [email, setEmail] = useState('')
+  const [deliveryMethod, setDeliveryMethod] = useState<'nova_poshta' | 'ukr_poshta' | 'pickup'>('nova_poshta')
+  const [address, setAddress] = useState('')
+  const [paymentMethod, setPaymentMethod] = useState<'cash_on_delivery' | 'card'>('cash_on_delivery')
+  
+  // Order submission state
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [submittedOrder, setSubmittedOrder] = useState<Order | null>(null)
+
+  // Load products list (with cache check)
+  useEffect(() => {
+    const fetchProducts = async () => {
+      // 1. Check local storage cache (expires in 1 hour)
+      const cachedData = localStorage.getItem('sweet_serh_products_cache')
+      const cachedTime = localStorage.getItem('sweet_serh_products_time')
+      const oneHour = 60 * 60 * 1000
+
+      if (cachedData && cachedTime && (Date.now() - Number(cachedTime) < oneHour)) {
+        try {
+          setProducts(JSON.parse(cachedData))
+          return
+        } catch (e) {
+          console.error("Error parsing cached products: ", e)
+        }
+      }
+
+      // 2. Fetch from Firestore
+      try {
+        const querySnapshot = await getDocs(collection(db, 'products'))
+        const fetchedProducts: Product[] = []
+        querySnapshot.forEach((doc) => {
+          fetchedProducts.push({ id: doc.id, ...doc.data() } as Product)
+        })
+
+        // 3. Fallback to local JSON if database is empty
+        if (fetchedProducts.length === 0) {
+          setProducts(productsData as Product[])
+        } else {
+          setProducts(fetchedProducts)
+          // Store to cache
+          localStorage.setItem('sweet_serh_products_cache', JSON.stringify(fetchedProducts))
+          localStorage.setItem('sweet_serh_products_time', Date.now().toString())
+        }
+      } catch (e) {
+        console.error("Error fetching products from Firestore, falling back to JSON: ", e)
+        setProducts(productsData as Product[])
+      }
+    }
+
+    fetchProducts()
+  }, [currentUser])
+
+  // Prefill checkout details from user profile
+  useEffect(() => {
+    const fetchUserProfile = async () => {
+      if (!currentUser) {
+        setName('')
+        setPhone('')
+        setEmail('')
+        setAddress('')
+        return
+      }
+      try {
+        const docRef = doc(db, 'users', currentUser.uid)
+        const docSnap = await getDoc(docRef)
+        if (docSnap.exists()) {
+          const profile = docSnap.data()
+          if (profile.fullName) setName(profile.fullName)
+          if (profile.phone) setPhone(profile.phone)
+          if (currentUser.email) setEmail(currentUser.email)
+          if (profile.address) setAddress(profile.address)
+        } else {
+          if (currentUser.email) setEmail(currentUser.email)
+          if (currentUser.displayName) setName(currentUser.displayName)
+        }
+      } catch (e) {
+        console.error("Error fetching user profile for checkout: ", e)
+      }
+    }
+    fetchUserProfile()
+  }, [currentUser])
+
+  // Calculate cart totals
+  const cartTotals = useMemo(() => {
+    const quantity = cart.reduce((acc, item) => acc + item.quantity, 0)
+    const amount = cart.reduce((acc, item) => acc + (item.product.price * item.quantity), 0)
+    return { quantity, amount }
+  }, [cart])
+
+  // Cart actions
+  const addToCart = (product: Product) => {
+    setCart(prev => {
+      const existing = prev.find(item => item.product.id === product.id)
+      if (existing) {
+        return prev.map(item => 
+          item.product.id === product.id 
+            ? { ...item, quantity: item.quantity + 1 } 
+            : item
+        )
+      }
+      return [...prev, { product, quantity: 1 }]
+    })
+    setIsCartOpen(true)
+  }
+
+  const updateQuantity = (productId: string, delta: number) => {
+    setCart(prev => {
+      return prev.map(item => {
+        if (item.product.id === productId) {
+          const newQty = item.quantity + delta
+          return newQty > 0 ? { ...item, quantity: newQty } : null
+        }
+        return item
+      }).filter(Boolean) as CartItem[]
+    })
+  }
+
+  const removeFromCart = (productId: string) => {
+    setCart(prev => prev.filter(item => item.product.id !== productId))
+  }
+
+  // Handle Checkout submission to Firestore
+  const handleCheckout = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (cart.length === 0) return
+
+    setIsSubmitting(true)
+
+    try {
+      const orderData = {
+        customerName: name,
+        customerPhone: phone,
+        customerEmail: email,
+        deliveryMethod,
+        deliveryAddress: address,
+        paymentMethod,
+        items: cart.map(item => ({
+          product: { ...item.product },
+          quantity: item.quantity
+        })),
+        totalAmount: cartTotals.amount,
+        status: 'new' as const,
+        createdAt: new Date()
+      }
+
+      const docRef = await addDoc(collection(db, 'orders'), orderData)
+      
+      const newOrder: Order = {
+        id: docRef.id,
+        ...orderData
+      }
+
+      setSubmittedOrder(newOrder)
+      setCart([])
+      
+      // Reset checkout fields (if not logged in, otherwise keep pre-filled profile)
+      if (!currentUser) {
+        setName('')
+        setPhone('')
+        setEmail('')
+        setAddress('')
+      }
+    } catch (e) {
+      console.error("Error creating order in Firestore: ", e)
+      alert("Виникла помилка під час оформлення замовлення. Спробуйте ще раз пізніше.")
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
 
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.tsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
+    <div className="app-container">
+      {/* HEADER */}
+      <header className="site-header">
+        <div className="container header-flex">
+          <div className="logo-group">
+            <span className="logo-icon">🍰</span>
+            <div className="logo-text">
+              <span className="logo-brand">sweet-serh-one</span>
+              <span className="logo-slogan">Майстерня авторських солодощів</span>
+            </div>
+          </div>
 
-      <div className="ticks"></div>
+          <div className="header-nav">
+            <Link 
+              className={`nav-mode-btn ${location.pathname === '/' ? 'active' : ''}`}
+              to="/"
+            >
+              🛍️ Магазин
+            </Link>
+            <Link 
+              className={`nav-mode-btn ${location.pathname === '/account' ? 'active' : ''}`}
+              to="/account"
+            >
+              👤 Кабінет
+            </Link>
+            <Link 
+              className={`nav-mode-btn ${location.pathname === '/admin' ? 'active' : ''}`}
+              to="/admin"
+            >
+              💼 Панель замовлень
+            </Link>
+          </div>
 
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
+          <div className="header-actions">
+            <button 
+              className="cart-btn"
+              onClick={() => setIsCartOpen(true)}
+              aria-label="Open cart"
+            >
+              <span className="cart-icon">🛒</span>
+              <span className="cart-text">Кошик</span>
+              {cartTotals.quantity > 0 && (
+                <span className="cart-badge">{cartTotals.quantity}</span>
+              )}
+            </button>
+          </div>
         </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
+      </header>
 
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
+      {/* ROUTED CONTENT */}
+      <Routes>
+        <Route 
+          path="/" 
+          element={
+            <Home 
+              products={products}
+              selectedCategory={selectedCategory}
+              setSelectedCategory={setSelectedCategory}
+              searchQuery={searchQuery}
+              setSearchQuery={setSearchQuery}
+              addToCart={addToCart}
+            />
+          } 
+        />
+        <Route path="/admin" element={<Admin />} />
+        <Route path="/account" element={<Account />} />
+      </Routes>
+
+      {/* FOOTER */}
+      <footer className="site-footer">
+        <div className="container footer-grid">
+          <div className="footer-info">
+            <span className="footer-logo">🍰 sweet-serh-one</span>
+            <p>
+              Вишукані кондитерські вироби ручної роботи та свіжа випічка для вашого свята та настрою.
+            </p>
+            <p className="copyright">© 2026 sweet-serh-one. Всі права захищено.</p>
+          </div>
+          <div className="footer-links">
+            <h4>Категорії</h4>
+            <ul>
+              <li><Link to="/" onClick={() => setSelectedCategory('Печиво та пряники')}>Печиво</Link></li>
+              <li><Link to="/" onClick={() => setSelectedCategory('Кекси та рулети')}>Кекси</Link></li>
+              <li><Link to="/" onClick={() => setSelectedCategory('Вафлі та трубочки')}>Вафлі</Link></li>
+              <li><Link to="/" onClick={() => setSelectedCategory('Зефір, мармелад та ірис')}>Зефір</Link></li>
+            </ul>
+          </div>
+          <div className="footer-contacts">
+            <h4>Контакти</h4>
+            <p>📍 м. Чернівці, Україна</p>
+            <p>📧 info@serh.one</p>
+            <p>📱 +38 (050) 123-45-67</p>
+          </div>
+        </div>
+      </footer>
+
+      {/* SHOPPING CART DRAWER */}
+      {isCartOpen && (
+        <div className="cart-backdrop" onClick={() => setIsCartOpen(false)}>
+          <div className="cart-drawer" onClick={e => e.stopPropagation()}>
+            <div className="cart-drawer-header">
+              <h3>Кошик солодощів</h3>
+              <button className="close-cart-btn" onClick={() => setIsCartOpen(false)}>✕</button>
+            </div>
+
+            {submittedOrder ? (
+              /* Success Order State */
+              <div className="success-order">
+                <span className="success-icon">🎉</span>
+                <h3>Дякуємо за замовлення!</h3>
+                <p>Номер вашого замовлення: <strong>{submittedOrder.id}</strong></p>
+                <p>Ми зв'яжемося з вами найближчим часом для підтвердження доставки.</p>
+                <button 
+                  className="btn"
+                  onClick={() => setSubmittedOrder(null)}
+                >
+                  Продовжити покупки
+                </button>
+              </div>
+            ) : cart.length > 0 ? (
+              <>
+                {/* Cart Items List */}
+                <div className="cart-drawer-body">
+                  <div className="cart-items-list">
+                    {cart.map(item => (
+                      <div key={item.product.id} className="cart-item">
+                        <img src={item.product.image} alt={item.product.title} className="cart-item-img" />
+                        <div className="cart-item-details">
+                          <h4>{item.product.title}</h4>
+                          <span className="cart-item-price">{item.product.price.toFixed(2)} грн</span>
+                          <div className="cart-item-controls">
+                            <button onClick={() => updateQuantity(item.product.id, -1)}>-</button>
+                            <span className="qty">{item.quantity}</span>
+                            <button onClick={() => updateQuantity(item.product.id, 1)}>+</button>
+                          </div>
+                        </div>
+                        <button 
+                          className="remove-item-btn"
+                          onClick={() => removeFromCart(item.product.id)}
+                          aria-label="Remove item"
+                        >
+                          🗑️
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Checkout Form */}
+                  <form onSubmit={handleCheckout} className="checkout-form">
+                    <h3>Дані доставки</h3>
+                    
+                    <div className="form-group">
+                      <label htmlFor="client-name">ПІБ *</label>
+                      <input 
+                        id="client-name"
+                        type="text" 
+                        required 
+                        placeholder="Ковальчук Сергій Ілліч"
+                        value={name}
+                        onChange={e => setName(e.target.value)}
+                      />
+                    </div>
+
+                    <div className="form-group">
+                      <label htmlFor="client-phone">Телефон *</label>
+                      <input 
+                        id="client-phone"
+                        type="tel" 
+                        required 
+                        placeholder="+380991234567"
+                        value={phone}
+                        onChange={e => setPhone(e.target.value)}
+                      />
+                    </div>
+
+                    <div className="form-group">
+                      <label htmlFor="client-email">Email (необов'язково)</label>
+                      <input 
+                        id="client-email"
+                        type="email" 
+                        placeholder="your@email.com"
+                        value={email}
+                        onChange={e => setEmail(e.target.value)}
+                      />
+                    </div>
+
+                    <div className="form-group">
+                      <label htmlFor="delivery-select">Спосіб доставки *</label>
+                      <select 
+                        id="delivery-select"
+                        value={deliveryMethod}
+                        onChange={e => setDeliveryMethod(e.target.value as 'nova_poshta' | 'ukr_poshta' | 'pickup')}
+                      >
+                        <option value="nova_poshta">Нова Пошта</option>
+                        <option value="ukr_poshta">Укрпошта</option>
+                        <option value="pickup">Самовивіз (Чернівці)</option>
+                      </select>
+                    </div>
+
+                    <div className="form-group">
+                      <label htmlFor="delivery-addr">Адреса доставки / Відділення *</label>
+                      <textarea 
+                        id="delivery-addr"
+                        required 
+                        rows={2}
+                        placeholder={
+                          deliveryMethod === 'pickup' 
+                            ? 'Вкажіть бажаний час самовивозу' 
+                            : 'Вкажіть місто та номер відділення зв\'язку'
+                        }
+                        value={address}
+                        onChange={e => setAddress(e.target.value)}
+                      />
+                    </div>
+
+                    <div className="form-group">
+                      <label htmlFor="payment-select">Спосіб оплати *</label>
+                      <select 
+                        id="payment-select"
+                        value={paymentMethod}
+                        onChange={e => setPaymentMethod(e.target.value as 'cash_on_delivery' | 'card')}
+                      >
+                        <option value="cash_on_delivery">При отриманні (післяплата)</option>
+                        <option value="card">Карткою онлайн</option>
+                      </select>
+                    </div>
+
+                    <div className="cart-totals-summary">
+                      <div className="totals-row">
+                        <span>Всього товарів:</span>
+                        <span>{cartTotals.quantity} шт.</span>
+                      </div>
+                      <div className="totals-row grand-total">
+                        <span>До сплати:</span>
+                        <span>{cartTotals.amount.toFixed(2)} грн</span>
+                      </div>
+                    </div>
+
+                    <button 
+                      type="submit" 
+                      className="btn submit-checkout-btn"
+                      disabled={isSubmitting}
+                    >
+                      {isSubmitting ? 'Надсилання...' : '🛍️ Підтвердити замовлення'}
+                    </button>
+                  </form>
+                </div>
+              </>
+            ) : (
+              <div className="empty-cart">
+                <span className="empty-cart-icon">🥧</span>
+                <h3>Кошик порожній</h3>
+                <p>Оберіть найкращі солодощі у каталозі, щоб зробити замовлення.</p>
+                <button className="btn" onClick={() => setIsCartOpen(false)}>
+                  Повернутися до покупок
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+    </div>
   )
 }
 

@@ -26,3 +26,16 @@ dist-ssr
 # Excel spreadsheets
 *.xlsx
 *.xls
+
+# Catalog and pricelists
+*.pdf
+*.docx
+*.doc
+
+# Environment variables
+.env
+.env.local
+.env.development
+.env.production
+.env.local
+.env.*.local
