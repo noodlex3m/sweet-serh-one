@@ -23,6 +23,9 @@ export default function Home({
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
 
+  // Lightbox state for product images
+  const [activeImage, setActiveImage] = useState<{ url: string; title: string } | null>(null);
+
   // Get unique categories list
   const categories = useMemo(() => {
     const cats = new Set<string>();
@@ -144,9 +147,14 @@ export default function Home({
               <div className="product-grid">
                 {paginatedProducts.map(product => (
                   <article key={product.id} className="product-card">
-                    <div className="product-card-image">
+                    <div 
+                      className="product-card-image"
+                      onClick={() => setActiveImage({ url: product.image, title: product.title })}
+                      title="Натисніть для збільшення"
+                    >
                       <img src={product.image} alt={product.title} loading="lazy" />
                       <span className="product-sku">Код: {product.sku}</span>
+                      <div className="image-zoom-indicator">🔍</div>
                     </div>
                     <div className="product-card-content">
                       <span className="product-category">{product.category}</span>
@@ -216,6 +224,17 @@ export default function Home({
           )}
         </div>
       </section>
+
+      {/* LIGHTBOX MODAL */}
+      {activeImage && (
+        <div className="lightbox-backdrop" onClick={() => setActiveImage(null)}>
+          <div className="lightbox-content" onClick={(e) => e.stopPropagation()}>
+            <button className="lightbox-close" onClick={() => setActiveImage(null)}>✕</button>
+            <img src={activeImage.url} alt={activeImage.title} className="lightbox-img" />
+            <div className="lightbox-caption">{activeImage.title}</div>
+          </div>
+        </div>
+      )}
     </>
   );
 }
