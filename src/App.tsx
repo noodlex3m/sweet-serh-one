@@ -80,7 +80,7 @@ function App() {
     }
 
     fetchProducts()
-  }, [currentUser])
+  }, [currentUser, location.pathname])
 
   // Prefill checkout details from user profile
   useEffect(() => {
