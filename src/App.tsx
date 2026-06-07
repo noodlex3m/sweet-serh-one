@@ -226,12 +226,14 @@ function App() {
             >
               👤 Кабінет
             </Link>
-            <Link 
-              className={`nav-mode-btn ${location.pathname === '/admin' ? 'active' : ''}`}
-              to="/admin"
-            >
-              💼 Панель замовлень
-            </Link>
+            {currentUser?.email === 'noodlex3m@gmail.com' && (
+              <Link 
+                className={`nav-mode-btn ${location.pathname === '/admin' ? 'active' : ''}`}
+                to="/admin"
+              >
+                💼 Панель замовлень
+              </Link>
+            )}
           </div>
 
           <div className="header-actions">
