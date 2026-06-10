@@ -39,3 +39,4 @@ dist-ssr
 .env.production
 .env.local
 .env.*.local
+.tmp.driveupload/
