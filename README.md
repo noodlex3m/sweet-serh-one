@@ -1,73 +1,93 @@
-# React + TypeScript + Vite
+# 🍰 sweet-serh-one — Майстерня авторських солодощів
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Сучасний, швидкий та адаптивний інтернет-магазин кондитерських виробів ручної роботи. Проєкт розроблено на стеку **React + TypeScript + Vite** з використанням бази даних **Firebase Firestore** та стилізацією на чистому **Vanilla CSS**.
 
-Currently, two official plugins are available:
+---
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## 🚀 Що вже реалізовано (Поточний функціонал)
 
-## React Compiler
+### 📁 1. Маршрутизація та структура сторінок
+* Інтегровано `react-router-dom` для безшовної навігації.
+* **Сторінки проєкту:**
+  * `/` — Головна вітрина магазину з каталогом товарів.
+  * `/account` — Особистий кабінет покупця.
+  * `/admin` — Панель адміністратора (доступна лише для `noodlex3m@gmail.com`).
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+### 📦 2. Каталог та Робота з товарами
+* **Пагінація:** список товарів поділений на сторінки (по 12 товарів), з автоматичним скиданням на 1-шу сторінку при зміні категорії чи пошуку.
+* **Пошук та фільтрація:** миттєва фільтрація за категоріями та пошуковим запитом (за назвою або SKU).
+* **Інтерактивний Lightbox:** клік по зображенню товару відкриває модальне вікно на весь екран із повним збереженням пропорцій.
+* **Кешування Firestore (`localStorage` Caching):** завантаження товарів кешується на **1 годину**. Це знижує кількість запитів до Firestore практично до нуля та забезпечує миттєве завантаження. Кеш автоматично скидається при діях адміна.
 
-## Expanding the ESLint configuration
+### 👤 3. Особистий кабінет та Оформлення замовлень
+* **Авторизація:** вхід через Google або за допомогою Email/Password.
+* **Профіль користувача:** збереження контактних даних (ПІБ, телефон, адреса, додаткові контакти: Telegram, Viber, WhatsApp). Дані автоматично підставляються в кошик при оформленні.
+* **Мої замовлення:** перегляд історії замовлень, відстеження статусів у реальному часі та можливість **скасувати замовлення** самостійно, якщо воно ще має статус "Нове".
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+### 💼 4. Панель управління (Адмінка)
+* **Каталог CRUD:** можливість створювати нові товари, редагувати опис, ціни, наявність та категорію, або видаляти товари.
+* **Керування замовленнями:** перегляд усіх замовлень користувачів у реальному часі зі зміною статусів.
+* **Seed каталог:** кнопка для швидкого завантаження 20 стартових товарів у порожню базу.
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+### 🔒 5. Безпека та Оптимізація
+* Безпечні правила доступу в `firestore.rules` (захист даних профілів та замовлень від сторонніх очей).
+* Перенесення приватних ключів у `.env` змінні.
+* Виправлення помилок типізації TypeScript та ESLint конфігурації.
+* Повна адаптація під мобільні екрани (Header та Hero-секции).
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+---
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+## 🎯 Що планується реалізувати (Наступні кроки)
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+1. **🚚 Інтеграція API Нової Пошти**:
+   * Зручний вибір міста доставки та номеру відділення з автодоповненням у формі замовлення.
+   * Використання **Netlify Serverless Functions** для безпечного виконання запитів та приховування API-ключа Нової Пошти.
+2. **🌐 Деплой на Netlify & Налаштування Домену**:
+   * Налаштування автоматичного деплою з GitHub.
+   * Прописування змінних оточення (Environment Variables) у кабінеті Netlify.
+   * Прив'язка домену другого рівня **sweet.serh.one** (через налаштування DNS Netlify).
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+---
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+## 🛠️ Як запустити проєкт локально
+
+1. **Клонувати репозиторій**:
+   ```bash
+   git clone https://github.com/noodlex3m/sweet-serh-one.git
+   cd sweet-serh-one
+   ```
+
+2. **Встановити залежності**:
+   ```bash
+   npm install
+   ```
+
+3. **Налаштувати змінні оточення**:
+   Створіть у корені файл `.env` на основі наявного файлу `env`:
+   ```env
+   VITE_FIREBASE_API_KEY=ваш_ключ
+   VITE_FIREBASE_AUTH_DOMAIN=ваш_домен
+   VITE_FIREBASE_PROJECT_ID=ваш_ід
+   VITE_FIREBASE_STORAGE_BUCKET=ваш_бакет
+   VITE_FIREBASE_MESSAGING_SENDER_ID=ваш_ід_відправника
+   VITE_FIREBASE_APP_ID=ваш_ід_додатка
+   ```
+
+4. **Запустити сервер розробки**:
+   ```bash
+   npm run dev
+   ```
+
+5. **Зібрати production-версію**:
+   ```bash
+   npm run build
+   ```
+
+---
+
+## 📚 Корисне навчання (TypeScript & React)
+
+При розробці цього проєкту ми звертаємо увагу на такі ключові концепції:
+* **Типізація у TypeScript (`src/types/index.ts`)**: Опис суворих інтерфейсів для `Product`, `CartItem` та `Order` допомагає уникнути логічних помилок при передачі даних між компонентами.
+* **Правильний розподіл файлів React Fast Refresh**: Експорт компонентів та хуків з одного файлу може блокувати HMR (гаряче перезавантаження). Для контекстів ми використовуємо директиву `/* eslint-disable react-refresh/only-export-components */` або розділяємо файли.
+* **Оновлення стану під час рендерингу**: Замість виклику `setState` в `useEffect` для синхронізації пропсів, React дозволяє коригувати стан під час рендеру шляхом порівняння з попереднім значенням (як реалізовано в `Home.tsx` для скидання сторінки).

@@ -3,6 +3,7 @@ import { useAuth } from '../context/AuthContext';
 import { doc, getDoc, setDoc, collection, query, where, onSnapshot, updateDoc } from 'firebase/firestore';
 import { db, auth } from '../services/firebase';
 import { GoogleAuthProvider, signInWithPopup, signInWithEmailAndPassword, createUserWithEmailAndPassword } from 'firebase/auth';
+import type { Order, CartItem } from '../types';
 
 interface UserProfile {
   fullName: string;
@@ -41,7 +42,7 @@ export default function Account() {
   const [activeTab, setActiveTab] = useState<'profile' | 'orders'>('profile');
 
   // Orders states
-  const [orders, setOrders] = useState<any[]>([]);
+  const [orders, setOrders] = useState<Order[]>([]);
   const [loadingOrders, setLoadingOrders] = useState(true);
 
   // Load profile data from Firestore on login
@@ -83,17 +84,21 @@ export default function Account() {
     );
 
     const unsubscribe = onSnapshot(q, (snapshot) => {
-      const fetchedOrders: any[] = [];
+      const fetchedOrders: Order[] = [];
       snapshot.forEach((doc) => {
         const data = doc.data();
         fetchedOrders.push({
           id: doc.id,
           ...data,
           createdAt: data.createdAt?.toDate() || new Date()
-        });
+        } as unknown as Order);
       });
       // Sort locally by date descending
-      fetchedOrders.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+      fetchedOrders.sort((a, b) => {
+        const dateA = a.createdAt instanceof Date ? a.createdAt.getTime() : new Date(a.createdAt).getTime();
+        const dateB = b.createdAt instanceof Date ? b.createdAt.getTime() : new Date(b.createdAt).getTime();
+        return dateB - dateA;
+      });
       setOrders(fetchedOrders);
       setLoadingOrders(false);
     }, (error) => {
@@ -130,13 +135,14 @@ export default function Account() {
       }
       setEmail('');
       setPassword('');
-    } catch (err: any) {
+    } catch (err) {
+      const firebaseError = err as { code?: string };
       console.error("Auth error: ", err);
-      if (err.code === 'auth/user-not-found' || err.code === 'auth/wrong-password' || err.code === 'auth/invalid-credential') {
+      if (firebaseError.code === 'auth/user-not-found' || firebaseError.code === 'auth/wrong-password' || firebaseError.code === 'auth/invalid-credential') {
         setAuthError('Неправильний email або пароль');
-      } else if (err.code === 'auth/email-already-in-use') {
+      } else if (firebaseError.code === 'auth/email-already-in-use') {
         setAuthError('Ця електронна адреса вже використовується');
-      } else if (err.code === 'auth/weak-password') {
+      } else if (firebaseError.code === 'auth/weak-password') {
         setAuthError('Пароль має містити щонайменше 6 символів');
       } else {
         setAuthError('Виникла помилка. Спробуйте пізніше.');
@@ -153,9 +159,10 @@ export default function Account() {
     const provider = new GoogleAuthProvider();
     try {
       await signInWithPopup(auth, provider);
-    } catch (err: any) {
+    } catch (err) {
+      const firebaseError = err as { code?: string };
       console.error("Google Auth error: ", err);
-      if (err.code === 'auth/popup-closed-by-user') {
+      if (firebaseError.code === 'auth/popup-closed-by-user') {
         setAuthError('Вікно авторизації було закрите');
       } else {
         setAuthError('Не вдалося увійти через Google. Переконайтеся, що цей провайдер увімкнено у Firebase Console.');
@@ -429,7 +436,7 @@ export default function Account() {
                         <div style={{ marginBottom: '12px' }}>
                           <span style={{ fontSize: '12px', color: 'var(--text-muted)', display: 'block', marginBottom: '6px' }}>Товари:</span>
                           <ul style={{ listStyle: 'none', padding: '0', margin: '0' }}>
-                            {order.items?.map((item: any, idx: number) => (
+                            {order.items?.map((item: CartItem, idx: number) => (
                               <li key={idx} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', marginBottom: '6px', color: 'var(--text-main)' }}>
                                 <span style={{ fontWeight: '500' }}>{item.product.title}</span>
                                 <span style={{ color: 'var(--text-muted)', marginLeft: '12px', textAlign: 'right' }}>{item.quantity} шт. × {item.product.price} грн</span>

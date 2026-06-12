@@ -57,7 +57,7 @@ export default function Admin() {
       await login(adminEmail, adminPassword);
       setAdminEmail('');
       setAdminPassword('');
-    } catch (err: any) {
+    } catch (err) {
       console.error("Login error: ", err);
       setLoginError('Неправильний email або пароль');
     } finally {
@@ -94,7 +94,7 @@ export default function Admin() {
     });
 
     return () => unsubscribe();
-  }, [currentUser]);
+  }, [currentUser, isAdmin]);
 
   // Real-time Firestore products listener (only when admin is logged in)
   useEffect(() => {
@@ -113,7 +113,7 @@ export default function Admin() {
     });
 
     return () => unsubscribe();
-  }, [currentUser]);
+  }, [currentUser, isAdmin]);
 
   // Seed Firestore if empty
   const handleSeedProducts = async () => {

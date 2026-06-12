@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from 'react'
+import { useState, useMemo } from 'react'
 import type { Product } from '../types'
 
 interface HomeProps {
@@ -22,6 +22,14 @@ export default function Home({
 }: HomeProps) {
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
+  const [prevCategory, setPrevCategory] = useState(selectedCategory);
+  const [prevSearchQuery, setPrevSearchQuery] = useState(searchQuery);
+
+  if (selectedCategory !== prevCategory || searchQuery !== prevSearchQuery) {
+    setPrevCategory(selectedCategory);
+    setPrevSearchQuery(searchQuery);
+    setCurrentPage(1);
+  }
 
   // Lightbox state for product images
   const [activeImage, setActiveImage] = useState<{ url: string; title: string } | null>(null);
@@ -42,11 +50,6 @@ export default function Home({
       return matchesCategory && matchesSearch;
     });
   }, [products, selectedCategory, searchQuery]);
-
-  // Reset page to 1 when filters or search query changes
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [selectedCategory, searchQuery]);
 
   // Calculate total pages
   const totalPages = Math.ceil(filteredProducts.length / PRODUCTS_PER_PAGE);
