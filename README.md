@@ -49,19 +49,17 @@
 * Секретний ключ `VITE_NOVAPOSHTA_API_KEY` повністю прихований від клієнта — він безпечно зберігається у змінних оточення Netlify і більше не компілюється у клієнтський бандл.
 * Запити проксуються через відносний шлях `/.netlify/functions/nova-poshta` на нашому власному домені, що запобігає будь-яким проблемам із CORS.
 
----
+### 🎨 8. Унікальний Favicon сайту
+* Створено та встановлено сучасний логотип-іконку у вигляді шматочка торта в [index.html](file:///c:/Users/noodl/Desktop/project/sweet-serh-one/index.html) (файл [public/favicon.png](file:///c:/Users/noodl/Desktop/project/sweet-serh-one/public/favicon.png)), замінивши стандартну іконку Vite.
 
-## 🎯 Що планується реалізувати (Наступні кроки)
+### 🔍 9. SEO-оптимізація та Google Search Console
+* Налаштовано динамічне керування назвами вкладок браузера (`<title>`) та мета-описами сторінок (`<meta name="description">`) на базі вбудованого функціоналу **React 19** без сторонніх бібліотек.
+* Службові та приватні розділи (`/account`, `/admin`) закриті від пошукових ботів за допомогою тегів `noindex, nofollow` та інструкцій у [public/robots.txt](file:///c:/Users/noodl/Desktop/project/sweet-serh-one/public/robots.txt).
+* Створено карту сайту [public/sitemap.xml](file:///c:/Users/noodl/Desktop/project/sweet-serh-one/public/sitemap.xml) для індексації публічного каталогу, успішно додано піддомен та надіслано карту сайту в Google Search Console.
 
-1. **🎨 Favicon для проєкту**:
-   * Намалювати/підібрати та налаштувати відповідну іконку (favicon) для сайту (наприклад, гарне тістечко або торт), щоб замінити стандартний логотип Vite.
-2. **🔍 SEO & Meta (Оптимізація для пошукових систем)**:
-   * Інтегрувати бібліотеку `react-helmet-async` для динамічного керування мета-тегами.
-   * Реалізувати унікальні заголовки `<title>` та описи `<meta name="description">` для кожної сторінки (магазин, окремі категорії).
-   * Створити конфігураційні файли пошукової оптимізації: `robots.txt`, `sitemap.xml`, підготувати інтеграцію з Google Search Console.
-3. **📱 PWA (Progressive Web App)**:
-   * Налаштувати плагін `vite-plugin-pwa` для додавання Service Workers.
-   * Створити маніфест додатка, щоб інтернет-магазин працював автономно, підтримував базове офлайн-кешування та міг встановлюватися як нативний додаток на iOS, Android та ПК.
+### 📱 10. PWA (Progressive Web App)
+* Інтегровано плагін `vite-plugin-pwa` для генерації Service Worker, що кешує статичні ресурси додатку для роботи в офлайн-режимі.
+* Створено іконки [public/icon-192.png](file:///c:/Users/noodl/Desktop/project/sweet-serh-one/public/icon-192.png) та [public/icon-512.png](file:///c:/Users/noodl/Desktop/project/sweet-serh-one/public/icon-512.png) та заповнено Web App Manifest, що дозволяє користувачам встановлювати сайт як нативний мобільний або десктопний додаток.
 
 ---
 
