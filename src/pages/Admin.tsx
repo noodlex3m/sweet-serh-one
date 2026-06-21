@@ -226,8 +226,11 @@ export default function Admin() {
   if (!isAdmin) {
     /* ADMIN LOGIN PAGE */
     return (
-      <section className="admin-section" style={{ padding: '60px 0', flexGrow: 1, backgroundColor: 'var(--bg-primary)' }}>
-        <div className="container" style={{ maxWidth: '420px', margin: '0 auto' }}>
+      <>
+        <title>Панель керування | sweet-serh-one</title>
+        <meta name="robots" content="noindex, nofollow" />
+        <section className="admin-section" style={{ padding: '60px 0', flexGrow: 1, backgroundColor: 'var(--bg-primary)' }}>
+          <div className="container" style={{ maxWidth: '420px', margin: '0 auto' }}>
           <div className="admin-login-card" style={{ margin: '0' }}>
             <h3>Вхід для адміністратора</h3>
             <p>Увійдіть, щоб керувати замовленнями та каталогом вашого магазину солодощів</p>
@@ -266,12 +269,16 @@ export default function Admin() {
           </div>
         </div>
       </section>
+      </>
     );
   }
 
   return (
-    <section className="admin-section" style={{ padding: '60px 0', flexGrow: 1, backgroundColor: 'var(--bg-primary)' }}>
-      <div className="container">
+    <>
+      <title>Панель керування | sweet-serh-one</title>
+      <meta name="robots" content="noindex, nofollow" />
+      <section className="admin-section" style={{ padding: '60px 0', flexGrow: 1, backgroundColor: 'var(--bg-primary)' }}>
+        <div className="container">
         
         {/* ADMIN TOP BAR */}
         <div className="admin-top-bar">
@@ -538,5 +545,6 @@ export default function Admin() {
 
       </div>
     </section>
+    </>
   );
 }

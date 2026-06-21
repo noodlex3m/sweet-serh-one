@@ -200,8 +200,11 @@ export default function Account() {
   };
 
   return (
-    <section className="account-section" style={{ padding: '60px 0', flexGrow: 1, backgroundColor: 'var(--bg-primary)' }}>
-      <div className="container" style={{ maxWidth: '600px', margin: '0 auto' }}>
+    <>
+      <title>Особистий кабінет | sweet-serh-one</title>
+      <meta name="robots" content="noindex, nofollow" />
+      <section className="account-section" style={{ padding: '60px 0', flexGrow: 1, backgroundColor: 'var(--bg-primary)' }}>
+        <div className="container" style={{ maxWidth: '600px', margin: '0 auto' }}>
         {!currentUser ? (
           /* AUTHENTICATION FORM */
           <div className="admin-login-card" style={{ maxWidth: '100%', margin: '0' }}>
@@ -475,5 +478,6 @@ export default function Account() {
         )}
       </div>
     </section>
+    </>
   );
 }

@@ -70,6 +70,9 @@ export default function Home({
 
   return (
     <>
+      <title>sweet-serh-one | Кондитерська майстерня авторських солодощів</title>
+      <meta name="description" content="Замовляйте авторські солодощі ручної роботи у Чернівцях. Свіжі торти, тістечка, кекси, печиво та патріотичні набори з швидкою доставкою." />
+
       {/* HERO BANNER */}
       <section className="hero-banner">
         <div className="container hero-grid">

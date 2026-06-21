@@ -13,6 +13,7 @@ import type { NovaPoshtaCity, NovaPoshtaWarehouse } from "./services/novaPoshta"
 import Home from "./pages/Home";
 import Admin from "./pages/Admin";
 import Account from "./pages/Account";
+import DevNotice from "./components/DevNotice";
 
 function App() {
 	const { currentUser } = useAuth();
@@ -763,6 +764,7 @@ function App() {
 					</div>
 				</div>
 			)}
+			<DevNotice />
 		</div>
 	);
 }

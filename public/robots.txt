@@ -1,0 +1,5 @@
+User-agent: *
+Disallow: /account
+Disallow: /admin
+
+Sitemap: https://sweet.serh.one/sitemap.xml
