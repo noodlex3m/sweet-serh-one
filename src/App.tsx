@@ -6,6 +6,8 @@ import "./App.css";
 import { db } from "./services/firebase";
 import { collection, addDoc, doc, getDoc, getDocs } from "firebase/firestore";
 import { useAuth } from "./context/AuthContext";
+import { fetchCities, fetchWarehouses } from "./services/novaPoshta";
+import type { NovaPoshtaCity, NovaPoshtaWarehouse } from "./services/novaPoshta";
 
 // Import pages
 import Home from "./pages/Home";
@@ -42,6 +44,72 @@ function App() {
 	// Order submission state
 	const [isSubmitting, setIsSubmitting] = useState(false);
 	const [submittedOrder, setSubmittedOrder] = useState<Order | null>(null);
+
+	// Nova Poshta states
+	const [npCityQuery, setNpCityQuery] = useState("");
+	const [npCities, setNpCities] = useState<NovaPoshtaCity[]>([]);
+	const [selectedNpCity, setSelectedNpCity] = useState<NovaPoshtaCity | null>(null);
+	const [npWarehouses, setNpWarehouses] = useState<NovaPoshtaWarehouse[]>([]);
+	const [selectedNpWarehouse, setSelectedNpWarehouse] = useState<NovaPoshtaWarehouse | null>(null);
+	const [loadingCities, setLoadingCities] = useState(false);
+	const [loadingWarehouses, setLoadingWarehouses] = useState(false);
+	const [isNpCitiesDropdownOpen, setIsNpCitiesDropdownOpen] = useState(false);
+
+	// Debounced City search
+	useEffect(() => {
+		if (npCityQuery.trim().length < 2) {
+			return;
+		}
+
+		if (selectedNpCity && npCityQuery === selectedNpCity.Description) {
+			return;
+		}
+
+		const timer = setTimeout(async () => {
+			const cities = await fetchCities(npCityQuery);
+			setNpCities(cities);
+			setIsNpCitiesDropdownOpen(cities.length > 0);
+			setLoadingCities(false);
+		}, 400);
+
+		return () => clearTimeout(timer);
+	}, [npCityQuery, selectedNpCity]);
+
+	// Fetch warehouses when city changes
+	useEffect(() => {
+		const loadWarehouses = async () => {
+			if (!selectedNpCity) {
+				setNpWarehouses([]);
+				setSelectedNpWarehouse(null);
+				return;
+			}
+
+			setLoadingWarehouses(true);
+			const warehouses = await fetchWarehouses(selectedNpCity.Ref);
+			setNpWarehouses(warehouses);
+			if (warehouses.length > 0) {
+				setSelectedNpWarehouse(warehouses[0]);
+			} else {
+				setSelectedNpWarehouse(null);
+			}
+			setLoadingWarehouses(false);
+		};
+
+		loadWarehouses();
+	}, [selectedNpCity]);
+
+	// Close city suggestions when clicking outside
+	useEffect(() => {
+		const handleOutsideClick = (e: MouseEvent) => {
+			const container = document.querySelector(".np-autocomplete-container");
+			if (container && !container.contains(e.target as Node)) {
+				setIsNpCitiesDropdownOpen(false);
+			}
+		};
+
+		document.addEventListener("mousedown", handleOutsideClick);
+		return () => document.removeEventListener("mousedown", handleOutsideClick);
+	}, []);
 
 	// Load products list (with cache check)
 	useEffect(() => {
@@ -178,15 +246,24 @@ function App() {
 		e.preventDefault();
 		if (cart.length === 0) return;
 
+		if (deliveryMethod === "nova_poshta" && (!selectedNpCity || !selectedNpWarehouse)) {
+			alert("Будь ласка, оберіть місто та відділення Нової Пошти.");
+			return;
+		}
+
 		setIsSubmitting(true);
 
 		try {
+			const finalAddress = deliveryMethod === "nova_poshta"
+				? `${selectedNpCity ? selectedNpCity.Description : ""}, ${selectedNpWarehouse ? selectedNpWarehouse.Description : ""}`
+				: address;
+
 			const orderData = {
 				customerName: name,
 				customerPhone: phone,
 				customerEmail: email,
 				deliveryMethod,
-				deliveryAddress: address,
+				deliveryAddress: finalAddress,
 				paymentMethod,
 				items: cart.map((item) => ({
 					product: { ...item.product },
@@ -214,6 +291,13 @@ function App() {
 				setEmail("");
 				setAddress("");
 			}
+			// Reset Nova Poshta selections in either case
+			setNpCityQuery("");
+			setSelectedNpCity(null);
+			setNpCities([]);
+			setIsNpCitiesDropdownOpen(false);
+			setNpWarehouses([]);
+			setSelectedNpWarehouse(null);
 		} catch (e) {
 			console.error("Error creating order in Firestore: ", e);
 			alert(
@@ -491,23 +575,137 @@ function App() {
 											</select>
 										</div>
 
-										<div className="form-group">
-											<label htmlFor="delivery-addr">
-												Адреса доставки / Відділення *
-											</label>
-											<textarea
-												id="delivery-addr"
-												required
-												rows={2}
-												placeholder={
-													deliveryMethod === "pickup"
-														? "Вкажіть бажаний час самовивозу"
-														: "Вкажіть місто та номер відділення зв'язку"
-												}
-												value={address}
-												onChange={(e) => setAddress(e.target.value)}
-											/>
-										</div>
+										{deliveryMethod === "nova_poshta" ? (
+											<>
+												<div className="form-group np-autocomplete-container" style={{ position: "relative" }}>
+													<label htmlFor="np-city-search">Місто доставки *</label>
+													<input
+														id="np-city-search"
+														type="text"
+														required
+														placeholder="Почніть вводити місто (напр. Чернівці)..."
+														value={npCityQuery}
+														onChange={(e) => {
+															const val = e.target.value;
+															setNpCityQuery(val);
+															if (val.trim().length < 2) {
+																setNpCities([]);
+																setIsNpCitiesDropdownOpen(false);
+																setLoadingCities(false);
+															} else {
+																if (!selectedNpCity || val !== selectedNpCity.Description) {
+																	setLoadingCities(true);
+																}
+															}
+															if (selectedNpCity && val !== selectedNpCity.Description) {
+																setSelectedNpCity(null);
+																setSelectedNpWarehouse(null);
+															}
+														}}
+														onFocus={() => {
+															if (npCities.length > 0) {
+																setIsNpCitiesDropdownOpen(true);
+															}
+														}}
+														autoComplete="off"
+													/>
+													{loadingCities && <span className="np-loader" style={{ fontSize: "11px", color: "var(--text-muted)", display: "block", marginTop: "4px" }}>Шукаємо міста...</span>}
+													
+													{isNpCitiesDropdownOpen && npCities.length > 0 && (
+														<ul className="np-suggestions-list" style={{
+															position: "absolute",
+															top: "100%",
+															left: 0,
+															right: 0,
+															zIndex: 100,
+															backgroundColor: "var(--bg-card)",
+															border: "1px solid var(--border-light)",
+															borderRadius: "8px",
+															maxHeight: "200px",
+															overflowY: "auto",
+															boxShadow: "0 4px 12px rgba(0, 0, 0, 0.1)",
+															listStyle: "none",
+															margin: 0,
+															padding: "4px 0"
+														}}>
+															{npCities.map((city) => (
+																<li
+																	key={city.Ref}
+																	onClick={() => {
+																		setSelectedNpCity(city);
+																		setNpCityQuery(city.Description);
+																		setIsNpCitiesDropdownOpen(false);
+																	}}
+																	style={{
+																		padding: "8px 12px",
+																		cursor: "pointer",
+																		fontSize: "14px",
+																		color: "var(--text-main)",
+																		transition: "background-color 0.2s"
+																	}}
+																	onMouseEnter={(e) => {
+																		(e.target as HTMLElement).style.backgroundColor = "var(--bg-hover)";
+																	}}
+																	onMouseLeave={(e) => {
+																		(e.target as HTMLElement).style.backgroundColor = "transparent";
+																	}}
+																>
+																	{city.Description}
+																</li>
+															))}
+														</ul>
+													)}
+												</div>
+
+												<div className="form-group">
+													<label htmlFor="np-warehouse-select">Відділення Нової Пошти *</label>
+													{loadingWarehouses ? (
+														<select id="np-warehouse-select" disabled>
+															<option>Завантаження відділень...</option>
+														</select>
+													) : (
+														<select
+															id="np-warehouse-select"
+															required
+															disabled={!selectedNpCity}
+															value={selectedNpWarehouse?.Ref || ""}
+															onChange={(e) => {
+																const selected = npWarehouses.find(w => w.Ref === e.target.value);
+																if (selected) {
+																	setSelectedNpWarehouse(selected);
+																}
+															}}
+														>
+															{!selectedNpCity && <option value="">Спершу оберіть місто</option>}
+															{selectedNpCity && npWarehouses.length === 0 && <option value="">Немає доступних відділень</option>}
+															{npWarehouses.map((warehouse) => (
+																<option key={warehouse.Ref} value={warehouse.Ref}>
+																	{warehouse.Description}
+																</option>
+															))}
+														</select>
+													)}
+												</div>
+											</>
+										) : (
+											<div className="form-group">
+												<label htmlFor="delivery-addr">
+													{deliveryMethod === "pickup" ? "Коментар до самовивозу *" : "Адреса доставки *"}
+												</label>
+												<textarea
+													id="delivery-addr"
+													required
+													rows={2}
+													placeholder={
+														deliveryMethod === "pickup"
+															? "Вкажіть бажаний час самовивозу"
+															: "Вкажіть область, місто, вулицю, будинок та квартиру"
+													}
+													value={address}
+													onChange={(e) => setAddress(e.target.value)}
+												/>
+											</div>
+										)}
 
 										<div className="form-group">
 											<label htmlFor="payment-select">Спосіб оплати *</label>
