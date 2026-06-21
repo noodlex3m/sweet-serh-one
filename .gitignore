@@ -41,3 +41,6 @@ env
 .env.local
 .env.*.local
 .tmp.driveupload/
+# Local Netlify folder
+.netlify
+deno.lock
