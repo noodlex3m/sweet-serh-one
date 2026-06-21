@@ -618,7 +618,7 @@ function App() {
 															left: 0,
 															right: 0,
 															zIndex: 100,
-															backgroundColor: "var(--bg-card)",
+															backgroundColor: "var(--bg-secondary)",
 															border: "1px solid var(--border-light)",
 															borderRadius: "8px",
 															maxHeight: "200px",
@@ -639,12 +639,12 @@ function App() {
 																	style={{
 																		padding: "8px 12px",
 																		cursor: "pointer",
-																		fontSize: "14px",
+         															fontSize: "14px",
 																		color: "var(--text-main)",
 																		transition: "background-color 0.2s"
 																	}}
 																	onMouseEnter={(e) => {
-																		(e.target as HTMLElement).style.backgroundColor = "var(--bg-hover)";
+																		(e.target as HTMLElement).style.backgroundColor = "var(--bg-primary)";
 																	}}
 																	onMouseLeave={(e) => {
 																		(e.target as HTMLElement).style.backgroundColor = "transparent";
