@@ -1,7 +1,7 @@
 # 🍰 sweet-serh-one — Майстерня авторських солодощів
 
 [![Project Status: Under Development](https://img.shields.io/badge/Project%20Status-Under%20Development-orange.svg)](#)
-[![Netlify Status](https://img.shields.io/badge/Netlify%20Deployment-In%20Progress-blue.svg)](#)
+[![Netlify Status](https://img.shields.io/badge/Netlify%20Deployment-Live-success.svg)](https://sweet.serh.one)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](file:///c:/Users/noodl/Desktop/project/sweet-serh-one/LICENSE)
 
 Сучасний, швидкий та адаптивний інтернет-магазин кондитерських виробів ручної роботи. Проєкт розроблено на стеку **React + TypeScript + Vite** з використанням бази даних **Firebase Firestore** та стилізацією на чистому **Vanilla CSS**.
@@ -39,23 +39,24 @@
 * Виправлення помилок типізації TypeScript та ESLint конфігурації.
 * Повна адаптація під мобільні екрани (Header та Hero-секции).
 
+### 🌐 6. Деплой та Хостинг (Netlify)
+* Налаштовано безперервну інтеграцію (CI/CD) з автоматичним деплоєм після кожного комміту в гілку `main`.
+* Прив'язано та захищено персональний домен другого рівня **[https://sweet.serh.one](https://sweet.serh.one)** з автоматичним перенаправленням на безпечне з'єднання HTTPS (Let's Encrypt SSL).
+* Усі приватні API-ключі безпечно перенесено в змінні оточення (Environment Variables) панелі Netlify.
+
 ---
 
 ## 🎯 Що планується реалізувати (Наступні кроки)
 
-1. **🌐 Деплой на Netlify & Налаштування Домену**:
-   * Налаштування автоматичного деплою з GitHub.
-   * Прописування змінних оточення (Environment Variables) у кабінеті Netlify (Firebase та Нова Пошта API-ключі).
-   * Прив'язка домену другого рівня **sweet.serh.one** (через налаштування DNS Netlify).
-2. **🚚 Безпечне перенесення API Нової Пошти**:
+1. **🚚 Безпечне перенесення API Нової Пошти**:
    * Створення **Netlify Serverless Function** (наприклад, `/api/nova-poshta`), яка виконуватиме запити на сервері, щоб приховати секретний API-ключ від кінцевих користувачів.
-3. **🎨 Favicon для проєкту**:
+2. **🎨 Favicon для проєкту**:
    * Намалювати/підібрати та налаштувати відповідну іконку (favicon) для сайту (наприклад, гарне тістечко або торт), щоб замінити стандартний логотип Vite.
-4. **🔍 SEO & Meta (Оптимізація для пошукових систем)**:
+3. **🔍 SEO & Meta (Оптимізація для пошукових систем)**:
    * Інтегрувати бібліотеку `react-helmet-async` для динамічного керування мета-тегами.
    * Реалізувати унікальні заголовки `<title>` та описи `<meta name="description">` для кожної сторінки (магазин, окремі категорії).
    * Створити конфігураційні файли пошукової оптимізації: `robots.txt`, `sitemap.xml`, підготувати інтеграцію з Google Search Console.
-5. **📱 PWA (Progressive Web App)**:
+4. **📱 PWA (Progressive Web App)**:
    * Налаштувати плагін `vite-plugin-pwa` для додавання Service Workers.
    * Створити маніфест додатка, щоб інтернет-магазин працював автономно, підтримував базове офлайн-кешування та міг встановлюватися як нативний додаток на iOS, Android та ПК.
 
