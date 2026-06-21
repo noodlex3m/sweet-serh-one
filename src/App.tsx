@@ -583,7 +583,7 @@ function App() {
 														id="np-city-search"
 														type="text"
 														required
-														placeholder="Почніть вводити місто (напр. Чернівці)..."
+														placeholder="Наприклад, Чернівці"
 														value={npCityQuery}
 														onChange={(e) => {
 															const val = e.target.value;

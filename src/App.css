@@ -787,6 +787,12 @@
   transition: var(--transition-normal);
 }
 
+.form-group input::placeholder,
+.form-group textarea::placeholder {
+  color: var(--text-muted);
+  opacity: 0.6;
+}
+
 .form-group input:focus,
 .form-group select:focus,
 .form-group textarea:focus {
