@@ -127,7 +127,21 @@ export default function Admin() {
         const tempProducts = productsData.slice(0, 20); // Seed 20 items to respect write limits
         for (const prod of tempProducts) {
           const { id, ...prodWithoutId } = prod;
-          await setDoc(doc(db, 'products', id), prodWithoutId);
+          const typedProd = prodWithoutId as unknown as Product;
+          const productData = {
+            sku: typedProd.sku,
+            title: typedProd.title,
+            category: typedProd.category,
+            price: typedProd.price,
+            description: typedProd.description || '',
+            image: typedProd.image || '',
+            inStock: typedProd.inStock,
+            unit: typedProd.unit || 'кг',
+            shelfLife: typedProd.shelfLife || '',
+            storageConditions: typedProd.storageConditions || '',
+            packageWeight: typedProd.packageWeight || ''
+          };
+          await setDoc(doc(db, 'products', id), productData);
         }
         localStorage.removeItem('sweet_serh_products_cache');
         alert("Успішно завантажено 20 товарів у Firestore");

@@ -7,7 +7,11 @@
 		"category": "Печиво та пряники",
 		"price": 197.288,
 		"image": "#",
-		"inStock": true
+		"inStock": true,
+		"unit": "кг",
+		"packageWeight": "ящик 1.5 кг",
+		"shelfLife": "30 діб",
+		"storageConditions": "при t від +15°С до +21°С"
 	},
 	{
 		"id": "57",
@@ -17,7 +21,11 @@
 		"category": "Печиво та пряники",
 		"price": 81,
 		"image": "#",
-		"inStock": true
+		"inStock": true,
+		"unit": "кг",
+		"packageWeight": "ящик 4 кг",
+		"shelfLife": "60 діб",
+		"storageConditions": "при t від +15°С до +21°С"
 	},
 	{
 		"id": "191",
@@ -27,7 +35,11 @@
 		"category": "Печиво та пряники",
 		"price": 264.6,
 		"image": "#",
-		"inStock": true
+		"inStock": true,
+		"unit": "бл",
+		"packageWeight": "блок 120 шт",
+		"shelfLife": "12 місяців",
+		"storageConditions": "при t від +5°С до +25°С"
 	},
 	{
 		"id": "238",
@@ -37,7 +49,11 @@
 		"category": "Печиво та пряники",
 		"price": 15.039,
 		"image": "#",
-		"inStock": true
+		"inStock": true,
+		"unit": "шт",
+		"packageWeight": "пакет 50 г",
+		"shelfLife": "9 місяців",
+		"storageConditions": "при t від +5°С до +20°С"
 	},
 	{
 		"id": "281",
@@ -47,7 +63,11 @@
 		"category": "Печиво та пряники",
 		"price": 134.26,
 		"image": "#",
-		"inStock": true
+		"inStock": true,
+		"unit": "кг",
+		"packageWeight": "екран 2.5 кг",
+		"shelfLife": "45 діб",
+		"storageConditions": "при t від +15°С до +21°С"
 	},
 	{
 		"id": "322",
