@@ -3,10 +3,14 @@ export interface Product {
 	sku: string;
 	title: string;
 	price: number;
-	description: string;
+	description?: string;
 	category: string;
-	image: string; // URL зображення товару
+	image?: string; // URL зображення товару
 	inStock: boolean; // чи є товар у наявності
+	unit?: string; // Одиниця виміру (кг, шт, уп, блок тощо)
+	shelfLife?: string; // Термін зберігання
+	storageConditions?: string; // Умови зберігання
+	packageWeight?: string; // Вага упаковки / ящика
 }
 
 export interface CartItem {

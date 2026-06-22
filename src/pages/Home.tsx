@@ -70,17 +70,17 @@ export default function Home({
 
   return (
     <>
-      <title>sweet-serh-one | Кондитерська майстерня авторських солодощів</title>
-      <meta name="description" content="Замовляйте авторські солодощі ручної роботи у Чернівцях. Свіжі торти, тістечка, кекси, печиво та патріотичні набори з швидкою доставкою." />
+      <title>sweet-serh-one | Оптово-роздрібний склад солодощів</title>
+      <meta name="description" content="Великий вибір кондитерських виробів оптом та в роздріб у Чернівцях. Прямі поставки зі складу: свіже печиво, кекси, вафлі, цукерки для вашого магазину чи дому." />
 
       {/* HERO BANNER */}
       <section className="hero-banner">
         <div className="container hero-grid">
           <div className="hero-content">
-            <span className="hero-subtitle">Солодкі моменти вашого життя</span>
+            <span className="hero-subtitle">Оптово-роздрібні поставки кондитерських виробів</span>
             <h1 className="hero-title">Справжнє задоволення в кожному шматочку</h1>
             <p className="hero-description">
-              Широкий асортимент свіжого печива, ніжних кексів, хрустких вафель та дитячих солодких наборів. Обирайте найкраще для своєї родини та друзів.
+              Широкий асортимент свіжого печива, ніжних кексів, хрустких вафель та дитячих солодких наборів безпосередньо зі складу в Чернівцях. Надійне партнерство та найкращі умови для вашого бізнесу.
             </p>
             <div className="hero-actions">
               <a href="#catalog" className="btn">Переглянути асортимент</a>
@@ -151,37 +151,79 @@ export default function Home({
           {paginatedProducts.length > 0 ? (
             <>
               <div className="product-grid">
-                {paginatedProducts.map(product => (
-                  <article key={product.id} className="product-card">
-                    <div 
-                      className="product-card-image"
-                      onClick={() => setActiveImage({ url: product.image, title: product.title })}
-                      title="Натисніть для збільшення"
-                    >
-                      <img src={product.image} alt={product.title} loading="lazy" />
-                      <span className="product-sku">Код: {product.sku}</span>
-                      <div className="image-zoom-indicator">🔍</div>
-                    </div>
-                    <div className="product-card-content">
-                      <span className="product-category">{product.category}</span>
-                      <h3 className="product-title">{product.title}</h3>
-                      <p className="product-description">{product.description}</p>
-                      <div className="product-footer">
-                        <div className="product-price">
-                          <span className="price-val">{product.price.toFixed(2)}</span>
-                          <span className="price-currency"> грн</span>
-                        </div>
-                        <button 
-                          className="btn btn-sm"
-                          onClick={() => addToCart(product)}
-                          disabled={!product.inStock}
-                        >
-                          {product.inStock ? '🛒 До кошика' : 'Немає'}
-                        </button>
+                {paginatedProducts.map(product => {
+                  const hasImage = product.image && product.image !== '#';
+                  return (
+                    <article key={product.id} className="product-card">
+                      <div 
+                        className="product-card-image"
+                        onClick={() => {
+                          if (hasImage) {
+                            setActiveImage({ url: product.image!, title: product.title });
+                          }
+                        }}
+                        style={{ cursor: hasImage ? 'pointer' : 'default' }}
+                        title={hasImage ? "Натисніть для збільшення" : undefined}
+                      >
+                        {hasImage ? (
+                          <img src={product.image} alt={product.title} loading="lazy" />
+                        ) : (
+                          <div className="product-card-image-placeholder">
+                            <span className="product-card-image-placeholder-icon">🍬</span>
+                            <span className="product-card-image-placeholder-text">Без фото</span>
+                          </div>
+                        )}
+                        <span className="product-sku">Код: {product.sku}</span>
+                        {hasImage && <div className="image-zoom-indicator">🔍</div>}
                       </div>
-                    </div>
-                  </article>
-                ))}
+                      <div className="product-card-content">
+                        <span className="product-category">{product.category}</span>
+                        <h3 className="product-title">{product.title}</h3>
+                        {product.description && (
+                          <p className="product-description">{product.description}</p>
+                        )}
+                        
+                        {/* B2B Specs Block */}
+                        {(product.packageWeight || product.shelfLife || product.storageConditions) && (
+                          <div className="product-specs">
+                            {product.packageWeight && (
+                              <div className="spec-item" title="Вага упаковки / Фасування">
+                                <span className="spec-icon">📦</span>
+                                <span className="spec-value">{product.packageWeight}</span>
+                              </div>
+                            )}
+                            {product.shelfLife && (
+                              <div className="spec-item" title="Термін зберігання">
+                                <span className="spec-icon">⏱️</span>
+                                <span className="spec-value">{product.shelfLife}</span>
+                              </div>
+                            )}
+                            {product.storageConditions && (
+                              <div className="spec-item" title="Умови зберігання">
+                                <span className="spec-icon">🌡️</span>
+                                <span className="spec-value">{product.storageConditions}</span>
+                              </div>
+                            )}
+                          </div>
+                        )}
+
+                        <div className="product-footer">
+                          <div className="product-price">
+                            <span className="price-val">{product.price.toFixed(2)}</span>
+                            <span className="price-currency"> грн/{product.unit || 'кг'}</span>
+                          </div>
+                          <button 
+                            className="btn btn-sm"
+                            onClick={() => addToCart(product)}
+                            disabled={!product.inStock}
+                          >
+                            {product.inStock ? '🛒 До кошика' : 'Немає'}
+                          </button>
+                        </div>
+                      </div>
+                    </article>
+                  );
+                })}
               </div>
 
               {/* Pagination controls */}

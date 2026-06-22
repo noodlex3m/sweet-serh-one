@@ -10,9 +10,9 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.png', 'robots.txt'],
       manifest: {
-        name: 'sweet-serh-one — Майстерня авторських солодощів',
+        name: 'sweet-serh-one — Оптово-роздрібний склад солодощів',
         short_name: 'sweet-serh-one',
-        description: 'Інтернет-магазин та майстерня авторських солодощів ручної роботи у Чернівцях',
+        description: 'Інтернет-магазин та оптово-роздрібний склад солодощів у Чернівцях',
         theme_color: '#FAF6F0',
         background_color: '#FAF6F0',
         display: 'standalone',

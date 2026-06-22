@@ -43,6 +43,10 @@ export default function Admin() {
   const [description, setDescription] = useState('');
   const [image, setImage] = useState('');
   const [inStock, setInStock] = useState(true);
+  const [unit, setUnit] = useState('кг');
+  const [shelfLife, setShelfLife] = useState('');
+  const [storageConditions, setStorageConditions] = useState('');
+  const [packageWeight, setPackageWeight] = useState('');
   const [isSavingProduct, setIsSavingProduct] = useState(false);
 
   // Check if current user is admin
@@ -153,8 +157,12 @@ export default function Admin() {
     setCategory(CATEGORIES[0]);
     setPrice(0);
     setDescription('');
-    setImage('https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=400');
+    setImage('');
     setInStock(true);
+    setUnit('кг');
+    setShelfLife('');
+    setStorageConditions('');
+    setPackageWeight('');
     setIsProductFormOpen(true);
   };
 
@@ -165,9 +173,13 @@ export default function Admin() {
     setTitle(product.title);
     setCategory(product.category);
     setPrice(product.price);
-    setDescription(product.description);
-    setImage(product.image);
+    setDescription(product.description || '');
+    setImage(product.image || '');
     setInStock(product.inStock);
+    setUnit(product.unit || 'кг');
+    setShelfLife(product.shelfLife || '');
+    setStorageConditions(product.storageConditions || '');
+    setPackageWeight(product.packageWeight || '');
     setIsProductFormOpen(true);
   };
 
@@ -182,9 +194,13 @@ export default function Admin() {
       title,
       category,
       price: Number(price),
-      description,
-      image,
-      inStock
+      description: description.trim() || '',
+      image: image.trim() || '',
+      inStock,
+      unit: unit.trim() || 'кг',
+      shelfLife: shelfLife.trim() || '',
+      storageConditions: storageConditions.trim() || '',
+      packageWeight: packageWeight.trim() || ''
     };
 
     try {
@@ -448,20 +464,40 @@ export default function Admin() {
 
                   <div className="form-group">
                     <label htmlFor="prod-price">Ціна (UAH) *</label>
-                    <input id="prod-price" type="number" required min="0" value={price} onChange={(e) => setPrice(Number(e.target.value))} />
+                    <input id="prod-price" type="number" required min="0" step="any" value={price} onChange={(e) => setPrice(Number(e.target.value))} />
+                  </div>
+
+                  <div className="form-group">
+                    <label htmlFor="prod-unit">Одиниця виміру *</label>
+                    <input id="prod-unit" type="text" required value={unit} onChange={(e) => setUnit(e.target.value)} placeholder="кг, шт, уп, блок тощо" />
+                  </div>
+
+                  <div className="form-group">
+                    <label htmlFor="prod-package-weight">Вага упаковки / Фасування</label>
+                    <input id="prod-package-weight" type="text" value={packageWeight} onChange={(e) => setPackageWeight(e.target.value)} placeholder="наприклад, ящик 1.5 кг" />
+                  </div>
+
+                  <div className="form-group">
+                    <label htmlFor="prod-shelf-life">Термін зберігання</label>
+                    <input id="prod-shelf-life" type="text" value={shelfLife} onChange={(e) => setShelfLife(e.target.value)} placeholder="наприклад, 30 діб, 3 місяці" />
+                  </div>
+
+                  <div className="form-group">
+                    <label htmlFor="prod-storage">Умови зберігання</label>
+                    <input id="prod-storage" type="text" value={storageConditions} onChange={(e) => setStorageConditions(e.target.value)} placeholder="наприклад, від +15°С до +21°С" />
                   </div>
 
                   <div className="form-group" style={{ gridColumn: 'span 2' }}>
-                    <label htmlFor="prod-image">Посилання на фото *</label>
-                    <input id="prod-image" type="text" required value={image} onChange={(e) => setImage(e.target.value)} />
+                    <label htmlFor="prod-image">Посилання на фото</label>
+                    <input id="prod-image" type="text" value={image} onChange={(e) => setImage(e.target.value)} placeholder="необов'язково" />
                   </div>
 
                   <div className="form-group" style={{ gridColumn: 'span 2' }}>
-                    <label htmlFor="prod-desc">Опис товару *</label>
-                    <textarea id="prod-desc" required rows={3} value={description} onChange={(e) => setDescription(e.target.value)} style={{ width: '100%', padding: '10px 14px', borderRadius: 'var(--border-radius-sm)', border: '1px solid var(--border-light)', backgroundColor: 'var(--bg-primary)', color: 'var(--text-main)', outline: 'none' }} />
+                    <label htmlFor="prod-desc">Опис товару</label>
+                    <textarea id="prod-desc" rows={3} value={description} onChange={(e) => setDescription(e.target.value)} placeholder="необов'язково" style={{ width: '100%', padding: '10px 14px', borderRadius: 'var(--border-radius-sm)', border: '1px solid var(--border-light)', backgroundColor: 'var(--bg-primary)', color: 'var(--text-main)', outline: 'none' }} />
                   </div>
 
-                  <div className="form-group" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <div className="form-group" style={{ display: 'flex', alignItems: 'center', gap: '8px', gridColumn: 'span 2' }}>
                     <input id="prod-stock" type="checkbox" checked={inStock} onChange={(e) => setInStock(e.target.checked)} style={{ width: 'auto' }} />
                     <label htmlFor="prod-stock" style={{ display: 'inline', margin: '0' }}>Товар є в наявності</label>
                   </div>
@@ -490,6 +526,8 @@ export default function Admin() {
                       <th style={{ padding: '16px' }}>Назва</th>
                       <th style={{ padding: '16px' }}>Категорія</th>
                       <th style={{ padding: '16px' }}>Ціна</th>
+                      <th style={{ padding: '16px' }}>Од.</th>
+                      <th style={{ padding: '16px' }}>Характеристики</th>
                       <th style={{ padding: '16px' }}>Статус</th>
                       <th style={{ padding: '16px', textAlign: 'center' }}>Дії</th>
                     </tr>
@@ -498,12 +536,23 @@ export default function Admin() {
                     {products.map(prod => (
                       <tr key={prod.id} style={{ borderBottom: '1px solid var(--border-light)' }}>
                         <td style={{ padding: '12px 16px' }}>
-                          <img src={prod.image} alt={prod.title} style={{ width: '40px', height: '40px', objectFit: 'cover', borderRadius: '4px', border: '1px solid var(--border-light)' }} />
+                          {prod.image && prod.image !== '#' ? (
+                            <img src={prod.image} alt={prod.title} style={{ width: '40px', height: '40px', objectFit: 'cover', borderRadius: '4px', border: '1px solid var(--border-light)' }} />
+                          ) : (
+                            <div style={{ width: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: 'var(--bg-primary)', borderRadius: '4px', border: '1px solid var(--border-light)', fontSize: '18px' }}>🍬</div>
+                          )}
                         </td>
                         <td style={{ padding: '12px 16px', fontWeight: '600', color: 'var(--accent-berry)' }}>{prod.sku}</td>
                         <td style={{ padding: '12px 16px', fontWeight: '500' }}>{prod.title}</td>
                         <td style={{ padding: '12px 16px', fontSize: '13px', color: 'var(--text-muted)' }}>{prod.category}</td>
                         <td style={{ padding: '12px 16px', fontWeight: '700' }}>{prod.price.toFixed(2)} грн</td>
+                        <td style={{ padding: '12px 16px', fontSize: '13px', fontWeight: '600' }}>{prod.unit || 'кг'}</td>
+                        <td style={{ padding: '12px 16px', fontSize: '12px', color: 'var(--text-muted)' }}>
+                          {prod.packageWeight && <div>📦 {prod.packageWeight}</div>}
+                          {prod.shelfLife && <div>⏱️ {prod.shelfLife}</div>}
+                          {prod.storageConditions && <div>🌡️ {prod.storageConditions}</div>}
+                          {!prod.packageWeight && !prod.shelfLife && !prod.storageConditions && <span>—</span>}
+                        </td>
                         <td style={{ padding: '12px 16px' }}>
                           <span style={{ 
                             fontSize: '11px', 

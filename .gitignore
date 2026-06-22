@@ -44,3 +44,6 @@ env
 # Local Netlify folder
 .netlify
 deno.lock
+
+# Catalog folder
+catalog/

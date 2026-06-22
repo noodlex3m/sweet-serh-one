@@ -319,7 +319,7 @@ function App() {
 						<div className="logo-text">
 							<span className="logo-brand">sweet-serh-one</span>
 							<span className="logo-slogan">
-								Майстерня авторських солодощів
+								Оптово-роздрібний склад солодощів
 							</span>
 						</div>
 					</div>
@@ -388,8 +388,7 @@ function App() {
 					<div className="footer-info">
 						<span className="footer-logo">🍰 sweet-serh-one</span>
 						<p>
-							Вишукані кондитерські вироби ручної роботи та свіжа випічка для
-							вашого свята та настрою.
+							Оптово-роздрібні поставки свіжих кондитерських виробів безпосередньо зі складу в Чернівцях. Найкращі умови для вашого бізнесу та дому.
 						</p>
 						<p className="copyright">
 							© 2026 sweet-serh-one. Всі права захищено.
