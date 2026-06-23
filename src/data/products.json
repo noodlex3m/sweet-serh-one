@@ -1,13 +1,13 @@
 [
 	{
-		"id": "3",
+		"id": "3", 
 		"sku": "SW_3",
-		"title": "\"Ромішка\" 1,5кг (Ст Випічка)",
-		"description": "Ніжний та неймовірно смачний кондитерський виріб \"\"Ромішка\" 1,5кг (Ст Випічка)\". Створено за найкращими рецептами для справжніх поціновувачів солодкого. Фасування: кг.",
-		"category": "Печиво та пряники",
-		"price": 197.288,
-		"image": "#",
-		"inStock": true,
+		"title": "\"Ромішка\" 1,5кг (Ст Випічка)", 
+		"description": "Ніжний та неймовірно смачний кондитерський виріб \"\"Ромішка\" 1,5кг (Ст Випічка)\". Створено за найкращими рецептами для справжніх поціновувачів солодкого. Фасування: кг.", 
+		"category": "Печиво та пряники", 
+		"price": 197.288, 
+		"image": "#", 
+		"inStock": true, 
 		"unit": "кг",
 		"packageWeight": "ящик 1.5 кг",
 		"shelfLife": "30 діб",
@@ -77,7 +77,11 @@
 		"category": "Печиво та пряники",
 		"price": 179.2,
 		"image": "#",
-		"inStock": true
+		"inStock": true,
+		"unit": "",
+		"packageWeight": "",
+		"shelfLife": "",
+		"storageConditions": ""
 	},
 	{
 		"id": "360",
@@ -87,7 +91,11 @@
 		"category": "Печиво та пряники",
 		"price": 70.089,
 		"image": "#",
-		"inStock": true
+		"inStock": true,
+		"unit": "",
+		"packageWeight": "",
+		"shelfLife": "",
+		"storageConditions": ""
 	},
 	{
 		"id": "421",
@@ -97,7 +105,11 @@
 		"category": "Печиво та пряники",
 		"price": 155.862,
 		"image": "#",
-		"inStock": true
+		"inStock": true,
+		"unit": "",
+		"packageWeight": "",
+		"shelfLife": "",
+		"storageConditions": ""
 	},
 	{
 		"id": "455",
@@ -107,7 +119,11 @@
 		"category": "Печиво та пряники",
 		"price": 141.26,
 		"image": "#",
-		"inStock": true
+		"inStock": true,
+		"unit": "",
+		"packageWeight": "",
+		"shelfLife": "",
+		"storageConditions": ""
 	},
 	{
 		"id": "557",
@@ -117,7 +133,11 @@
 		"category": "Печиво та пряники",
 		"price": 112.868,
 		"image": "#",
-		"inStock": true
+		"inStock": true,
+		"unit": "",
+		"packageWeight": "",
+		"shelfLife": "",
+		"storageConditions": ""
 	},
 	{
 		"id": "601",
@@ -127,7 +147,11 @@
 		"category": "Печиво та пряники",
 		"price": 59.13,
 		"image": "#",
-		"inStock": true
+		"inStock": true,
+		"unit": "",
+		"packageWeight": "",
+		"shelfLife": "",
+		"storageConditions": ""
 	},
 	{
 		"id": "646",
@@ -136,8 +160,12 @@
 		"description": "Ніжний та неймовірно смачний кондитерський виріб \"Курага з наповнювачем 1.5.кг (Ст. Випічка)\". Створено за найкращими рецептами для справжніх поціновувачів солодкого. Фасування: кг.",
 		"category": "Печиво та пряники",
 		"price": 152.495,
-		"image": "#",
-		"inStock": true
+		"image": "",
+		"inStock": true,
+		"unit": "",
+		"packageWeight": "",
+		"shelfLife": "",
+		"storageConditions": ""
 	},
 	{
 		"id": "691",
@@ -147,7 +175,11 @@
 		"category": "Печиво та пряники",
 		"price": 192.962,
 		"image": "#",
-		"inStock": true
+		"inStock": true,
+		"unit": "",
+		"packageWeight": "",
+		"shelfLife": "",
+		"storageConditions": ""
 	},
 	{
 		"id": "742",
@@ -157,7 +189,11 @@
 		"category": "Печиво та пряники",
 		"price": 245,
 		"image": "#",
-		"inStock": true
+		"inStock": true,
+		"unit": "",
+		"packageWeight": "",
+		"shelfLife": "",
+		"storageConditions": ""
 	},
 	{
 		"id": "779",
@@ -167,7 +203,11 @@
 		"category": "Печиво та пряники",
 		"price": 239.531,
 		"image": "#",
-		"inStock": true
+		"inStock": true,
+		"unit": "",
+		"packageWeight": "",
+		"shelfLife": "",
+		"storageConditions": ""
 	},
 	{
 		"id": "843",
@@ -177,7 +217,11 @@
 		"category": "Печиво та пряники",
 		"price": 290.28,
 		"image": "#",
-		"inStock": true
+		"inStock": true,
+		"unit": "",
+		"packageWeight": "",
+		"shelfLife": "",
+		"storageConditions": ""
 	},
 	{
 		"id": "904",
@@ -187,7 +231,11 @@
 		"category": "Печиво та пряники",
 		"price": 198.276,
 		"image": "#",
-		"inStock": true
+		"inStock": true,
+		"unit": "",
+		"packageWeight": "",
+		"shelfLife": "",
+		"storageConditions": ""
 	},
 	{
 		"id": "992",
@@ -197,7 +245,11 @@
 		"category": "Печиво та пряники",
 		"price": 205,
 		"image": "#",
-		"inStock": true
+		"inStock": true,
+		"unit": "",
+		"packageWeight": "",
+		"shelfLife": "",
+		"storageConditions": ""
 	},
 	{
 		"id": "1066",
@@ -207,7 +259,11 @@
 		"category": "Печиво та пряники",
 		"price": 30,
 		"image": "#",
-		"inStock": true
+		"inStock": true,
+		"unit": "",
+		"packageWeight": "",
+		"shelfLife": "",
+		"storageConditions": ""
 	},
 	{
 		"id": "1122",
@@ -217,7 +273,11 @@
 		"category": "Печиво та пряники",
 		"price": 420,
 		"image": "#",
-		"inStock": true
+		"inStock": true,
+		"unit": "",
+		"packageWeight": "",
+		"shelfLife": "",
+		"storageConditions": ""
 	},
 	{
 		"id": "1168",
@@ -227,7 +287,11 @@
 		"category": "Печиво та пряники",
 		"price": 182,
 		"image": "#",
-		"inStock": true
+		"inStock": true,
+		"unit": "",
+		"packageWeight": "",
+		"shelfLife": "",
+		"storageConditions": ""
 	},
 	{
 		"id": "1224",
@@ -237,7 +301,11 @@
 		"category": "Печиво та пряники",
 		"price": 146.16,
 		"image": "#",
-		"inStock": true
+		"inStock": true,
+		"unit": "",
+		"packageWeight": "",
+		"shelfLife": "",
+		"storageConditions": ""
 	},
 	{
 		"id": "1257",
@@ -247,7 +315,11 @@
 		"category": "Печиво та пряники",
 		"price": 169.114,
 		"image": "#",
-		"inStock": true
+		"inStock": true,
+		"unit": "",
+		"packageWeight": "",
+		"shelfLife": "",
+		"storageConditions": ""
 	},
 	{
 		"id": "1334",
@@ -257,7 +329,11 @@
 		"category": "Печиво та пряники",
 		"price": 173.964,
 		"image": "#",
-		"inStock": true
+		"inStock": true,
+		"unit": "",
+		"packageWeight": "",
+		"shelfLife": "",
+		"storageConditions": ""
 	},
 	{
 		"id": "1395",
@@ -267,7 +343,11 @@
 		"category": "Печиво та пряники",
 		"price": 32.967,
 		"image": "#",
-		"inStock": true
+		"inStock": true,
+		"unit": "",
+		"packageWeight": "",
+		"shelfLife": "",
+		"storageConditions": ""
 	},
 	{
 		"id": "5",
@@ -277,7 +357,11 @@
 		"category": "Кекси та рулети",
 		"price": 166.455,
 		"image": "#",
-		"inStock": true
+		"inStock": true,
+		"unit": "",
+		"packageWeight": "",
+		"shelfLife": "",
+		"storageConditions": ""
 	},
 	{
 		"id": "34",
@@ -287,7 +371,11 @@
 		"category": "Кекси та рулети",
 		"price": 161.19,
 		"image": "#",
-		"inStock": true
+		"inStock": true,
+		"unit": "",
+		"packageWeight": "",
+		"shelfLife": "",
+		"storageConditions": ""
 	},
 	{
 		"id": "81",
@@ -297,7 +385,11 @@
 		"category": "Кекси та рулети",
 		"price": 208.6,
 		"image": "#",
-		"inStock": true
+		"inStock": true,
+		"unit": "",
+		"packageWeight": "",
+		"shelfLife": "",
+		"storageConditions": ""
 	},
 	{
 		"id": "310",
@@ -307,7 +399,11 @@
 		"category": "Кекси та рулети",
 		"price": 203,
 		"image": "#",
-		"inStock": true
+		"inStock": true,
+		"unit": "",
+		"packageWeight": "",
+		"shelfLife": "",
+		"storageConditions": ""
 	},
 	{
 		"id": "383",
@@ -317,7 +413,11 @@
 		"category": "Кекси та рулети",
 		"price": 224,
 		"image": "#",
-		"inStock": true
+		"inStock": true,
+		"unit": "",
+		"packageWeight": "",
+		"shelfLife": "",
+		"storageConditions": ""
 	},
 	{
 		"id": "397",
@@ -327,7 +427,11 @@
 		"category": "Кекси та рулети",
 		"price": 116.775,
 		"image": "#",
-		"inStock": true
+		"inStock": true,
+		"unit": "",
+		"packageWeight": "",
+		"shelfLife": "",
+		"storageConditions": ""
 	},
 	{
 		"id": "402",
@@ -337,7 +441,11 @@
 		"category": "Кекси та рулети",
 		"price": 116.775,
 		"image": "#",
-		"inStock": true
+		"inStock": true,
+		"unit": "",
+		"packageWeight": "",
+		"shelfLife": "",
+		"storageConditions": ""
 	},
 	{
 		"id": "457",
@@ -347,7 +455,11 @@
 		"category": "Кекси та рулети",
 		"price": 197.386,
 		"image": "#",
-		"inStock": true
+		"inStock": true,
+		"unit": "",
+		"packageWeight": "",
+		"shelfLife": "",
+		"storageConditions": ""
 	},
 	{
 		"id": "478",
@@ -357,7 +469,11 @@
 		"category": "Кекси та рулети",
 		"price": 237.216,
 		"image": "#",
-		"inStock": true
+		"inStock": true,
+		"unit": "",
+		"packageWeight": "",
+		"shelfLife": "",
+		"storageConditions": ""
 	},
 	{
 		"id": "631",
@@ -367,7 +483,11 @@
 		"category": "Кекси та рулети",
 		"price": 158.99,
 		"image": "#",
-		"inStock": true
+		"inStock": true,
+		"unit": "",
+		"packageWeight": "",
+		"shelfLife": "",
+		"storageConditions": ""
 	},
 	{
 		"id": "645",
