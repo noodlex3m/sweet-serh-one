@@ -495,10 +495,19 @@ export default function Admin() {
                       </div>
                     </div>
 
-                    <div className="order-card-footer">
-                      <span className="total-label">Загальна сума:</span>
-                      <span className="total-val">{order.totalAmount.toFixed(2)} грн</span>
-                    </div>
+                     <div className="order-card-footer" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                       <div>
+                         <span className="total-label">Загальна сума: </span>
+                         <span className="total-val">{order.totalAmount.toFixed(2)} грн</span>
+                       </div>
+                       <button 
+                         className="btn btn-outline" 
+                         onClick={() => window.open(`/order/${order.id}/invoice`, '_blank')}
+                         style={{ padding: '6px 12px', fontSize: '12px', borderColor: 'var(--accent)', color: 'var(--accent)' }}
+                       >
+                         📄 Рахунок-фактура
+                       </button>
+                     </div>
                   </div>
                 ))}
               </div>

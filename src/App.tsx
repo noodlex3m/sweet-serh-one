@@ -13,6 +13,7 @@ import type { NovaPoshtaCity, NovaPoshtaWarehouse } from "./services/novaPoshta"
 import Home from "./pages/Home";
 import Admin from "./pages/Admin";
 import Account from "./pages/Account";
+import Invoice from "./pages/Invoice";
 import DevNotice from "./components/DevNotice";
 
 function App() {
@@ -322,59 +323,63 @@ function App() {
 		}
 	};
 
+	const isInvoicePage = location.pathname.includes("/invoice");
+
 	return (
 		<div className="app-container">
 			{/* HEADER */}
-			<header className="site-header">
-				<div className="container header-flex">
-					<div className="logo-group">
-						<span className="logo-icon">🍰</span>
-						<div className="logo-text">
-							<span className="logo-brand">sweet-serh-one</span>
-							<span className="logo-slogan">
-								Оптово-роздрібний склад солодощів
-							</span>
+			{!isInvoicePage && (
+				<header className="site-header">
+					<div className="container header-flex">
+						<div className="logo-group">
+							<span className="logo-icon">🍰</span>
+							<div className="logo-text">
+								<span className="logo-brand">sweet-serh-one</span>
+								<span className="logo-slogan">
+									Оптово-роздрібний склад солодощів
+								</span>
+							</div>
+						</div>
+
+						<div className="header-nav">
+							<Link
+								className={`nav-mode-btn ${location.pathname === "/" ? "active" : ""}`}
+								to="/"
+							>
+								🛍️ Магазин
+							</Link>
+							<Link
+								className={`nav-mode-btn ${location.pathname === "/account" ? "active" : ""}`}
+								to="/account"
+							>
+								👤 Кабінет
+							</Link>
+							{currentUser?.email === "noodlex3m@gmail.com" && (
+								<Link
+									className={`nav-mode-btn ${location.pathname === "/admin" ? "active" : ""}`}
+									to="/admin"
+								>
+									💼 Панель замовлень
+								</Link>
+							)}
+						</div>
+
+						<div className="header-actions">
+							<button
+								className="cart-btn"
+								onClick={() => setIsCartOpen(true)}
+								aria-label="Open cart"
+							>
+								<span className="cart-icon">🛒</span>
+								<span className="cart-text">Кошик</span>
+								{cartTotals.quantity > 0 && (
+									<span className="cart-badge">{cartTotals.quantity}</span>
+								)}
+							</button>
 						</div>
 					</div>
-
-					<div className="header-nav">
-						<Link
-							className={`nav-mode-btn ${location.pathname === "/" ? "active" : ""}`}
-							to="/"
-						>
-							🛍️ Магазин
-						</Link>
-						<Link
-							className={`nav-mode-btn ${location.pathname === "/account" ? "active" : ""}`}
-							to="/account"
-						>
-							👤 Кабінет
-						</Link>
-						{currentUser?.email === "noodlex3m@gmail.com" && (
-							<Link
-								className={`nav-mode-btn ${location.pathname === "/admin" ? "active" : ""}`}
-								to="/admin"
-							>
-								💼 Панель замовлень
-							</Link>
-						)}
-					</div>
-
-					<div className="header-actions">
-						<button
-							className="cart-btn"
-							onClick={() => setIsCartOpen(true)}
-							aria-label="Open cart"
-						>
-							<span className="cart-icon">🛒</span>
-							<span className="cart-text">Кошик</span>
-							{cartTotals.quantity > 0 && (
-								<span className="cart-badge">{cartTotals.quantity}</span>
-							)}
-						</button>
-					</div>
-				</div>
-			</header>
+				</header>
+			)}
 
 			{/* ROUTED CONTENT */}
 			<Routes>
@@ -393,65 +398,68 @@ function App() {
 				/>
 				<Route path="/admin" element={<Admin />} />
 				<Route path="/account" element={<Account />} />
+				<Route path="/order/:orderId/invoice" element={<Invoice />} />
 			</Routes>
 
 			{/* FOOTER */}
-			<footer className="site-footer">
-				<div className="container footer-grid">
-					<div className="footer-info">
-						<span className="footer-logo">🍰 sweet-serh-one</span>
-						<p>
-							Оптово-роздрібні поставки свіжих кондитерських виробів безпосередньо зі складу в Чернівцях. Найкращі умови для вашого бізнесу та дому.
-						</p>
-						<p className="copyright">
-							© 2026 sweet-serh-one. Всі права захищено.
-						</p>
+			{!isInvoicePage && (
+				<footer className="site-footer">
+					<div className="container footer-grid">
+						<div className="footer-info">
+							<span className="footer-logo">🍰 sweet-serh-one</span>
+							<p>
+								Оптово-роздрібні поставки свіжих кондитерських виробів безпосередньо зі складу в Чернівцях. Найкращі умови для вашого бізнесу та дому.
+							</p>
+							<p className="copyright">
+								© 2026 sweet-serh-one. Всі права захищено.
+							</p>
+						</div>
+						<div className="footer-links">
+							<h4>Категорії</h4>
+							<ul>
+								<li>
+									<Link
+										to="/"
+										onClick={() => setSelectedCategory("Печиво та пряники")}
+									>
+										Печиво
+									</Link>
+								</li>
+								<li>
+									<Link
+										to="/"
+										onClick={() => setSelectedCategory("Кекси та рулети")}
+									>
+										Кекси
+									</Link>
+								</li>
+								<li>
+									<Link
+										to="/"
+										onClick={() => setSelectedCategory("Вафлі та трубочки")}
+									>
+										Вафлі
+									</Link>
+								</li>
+								<li>
+									<Link
+										to="/"
+										onClick={() => setSelectedCategory("Зефір, мармелад та ірис")}
+									>
+										Зефір
+									</Link>
+								</li>
+							</ul>
+						</div>
+						<div className="footer-contacts">
+							<h4>Контакти</h4>
+							<p>📍 м. Чернівці, Україна</p>
+							<p>📧 info@serh.one</p>
+							<p>📱 +38 (050) 123-45-67</p>
+						</div>
 					</div>
-					<div className="footer-links">
-						<h4>Категорії</h4>
-						<ul>
-							<li>
-								<Link
-									to="/"
-									onClick={() => setSelectedCategory("Печиво та пряники")}
-								>
-									Печиво
-								</Link>
-							</li>
-							<li>
-								<Link
-									to="/"
-									onClick={() => setSelectedCategory("Кекси та рулети")}
-								>
-									Кекси
-								</Link>
-							</li>
-							<li>
-								<Link
-									to="/"
-									onClick={() => setSelectedCategory("Вафлі та трубочки")}
-								>
-									Вафлі
-								</Link>
-							</li>
-							<li>
-								<Link
-									to="/"
-									onClick={() => setSelectedCategory("Зефір, мармелад та ірис")}
-								>
-									Зефір
-								</Link>
-							</li>
-						</ul>
-					</div>
-					<div className="footer-contacts">
-						<h4>Контакти</h4>
-						<p>📍 м. Чернівці, Україна</p>
-						<p>📧 info@serh.one</p>
-						<p>📱 +38 (050) 123-45-67</p>
-					</div>
-				</div>
-			</footer>
+				</footer>
+			)}
 
 			{/* SHOPPING CART DRAWER */}
 			{isCartOpen && (
@@ -472,13 +480,20 @@ function App() {
 							<div className="success-order">
 								<span className="success-icon">🎉</span>
 								<h3>Дякуємо за замовлення!</h3>
-								<p>
-									Номер вашого замовлення: <strong>{submittedOrder.id}</strong>
+								<p style={{ marginBottom: '10px' }}>
+									Номер вашого замовлення: <strong>{submittedOrder.id.substring(0, 8).toUpperCase()}</strong>
 								</p>
-								<p>
-									Ми зв'яжемося з вами найближчим часом для підтвердження
-									доставки.
-								</p>
+								{submittedOrder.paymentMethod === 'iban' ? (
+									<div style={{ margin: '15px 0', padding: '12px', background: 'rgba(255, 126, 27, 0.05)', border: '1px dashed rgba(255, 126, 27, 0.3)', borderRadius: '8px', fontSize: '13px', lineHeight: '1.4', color: 'var(--text-main)', textAlign: 'left' }}>
+										ℹ️ <strong>Оплата за реквізитами ФОП (IBAN):</strong><br />
+										Менеджер складу зараз перевіряє наявність солодощів на складі. Офіційний рахунок для оплати буде виставлено у вашому <strong>Кабінеті</strong> (вкладка «Мої замовлення») відразу після підтвердження.
+									</div>
+								) : (
+									<p>
+										Ми зв'яжемося з вами найближчим часом для підтвердження
+										доставки.
+									</p>
+								)}
 								<button className="btn" onClick={() => setSubmittedOrder(null)}>
 									Продовжити покупки
 								</button>

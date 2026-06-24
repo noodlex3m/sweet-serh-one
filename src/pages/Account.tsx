@@ -457,20 +457,37 @@ export default function Account() {
                           </div>
                         )}
 
+                        {order.paymentMethod === 'iban' && order.status === 'new' && (
+                          <div style={{ padding: '10px 12px', backgroundColor: 'rgba(255, 126, 27, 0.05)', border: '1px dashed rgba(255, 126, 27, 0.3)', borderRadius: 'var(--border-radius-sm)', fontSize: '12px', color: '#e66a0d', marginBottom: '14px', lineHeight: '1.4' }}>
+                            ⏳ Менеджер перевіряє наявність товарів на складі. Після підтвердження тут з'явиться офіційний рахунок на оплату (IBAN).
+                          </div>
+                        )}
+
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '10px', borderTop: '1px dashed var(--border-light)' }}>
                           <div>
                             <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>Сума до сплати:</span>
                             <strong style={{ fontSize: '16px', color: 'var(--accent-berry)', display: 'block' }}>{order.totalAmount.toFixed(2)} грн</strong>
                           </div>
-                          {order.status === 'new' && (
-                            <button 
-                              className="btn btn-outline" 
-                              onClick={() => handleCancelOrder(order.id)}
-                              style={{ padding: '6px 12px', fontSize: '12px', borderColor: '#dc3545', color: '#dc3545' }}
-                            >
-                              Скасувати
-                            </button>
-                          )}
+                          <div style={{ display: 'flex', gap: '8px' }}>
+                            {order.paymentMethod === 'iban' && order.status === 'awaiting_payment' && (
+                              <button 
+                                className="btn" 
+                                onClick={() => window.open(`/order/${order.id}/invoice`, '_blank')}
+                                style={{ padding: '6px 12px', fontSize: '12px', background: '#ff7e1b', color: '#fff', border: 'none' }}
+                              >
+                                📄 Рахунок на оплату (PDF)
+                              </button>
+                            )}
+                            {order.status === 'new' && (
+                              <button 
+                                className="btn btn-outline" 
+                                onClick={() => handleCancelOrder(order.id)}
+                                style={{ padding: '6px 12px', fontSize: '12px', borderColor: '#dc3545', color: '#dc3545' }}
+                              >
+                                Скасувати
+                              </button>
+                            )}
+                          </div>
                         </div>
                       </div>
                     ))}

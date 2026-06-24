@@ -4,7 +4,11 @@ service cloud.firestore {
     // Rules for orders
     match /orders/{orderId} {
       allow create: if true; // anyone can place an order
-      allow read, update, delete: if request.auth != null && request.auth.token.email == 'noodlex3m@gmail.com'; // only admin
+      allow read: if request.auth != null && (
+        request.auth.token.email == 'noodlex3m@gmail.com' || 
+        resource.data.customerEmail == request.auth.token.email
+      ); // admin or owner can read
+      allow update, delete: if request.auth != null && request.auth.token.email == 'noodlex3m@gmail.com'; // only admin
     }
     
     // Rules for products catalog
