@@ -28,6 +28,7 @@ export interface Order {
 	paymentMethod: "cash_on_delivery" | "iban";
 	items: CartItem[];
 	totalAmount: number;
-	status: "new" | "processing" | "shipped" | "completed" | "cancelled";
+	status: "new" | "awaiting_payment" | "paid" | "processing" | "shipped" | "completed" | "cancelled";
+	adminNotes?: string;
 	createdAt: Date | string;
 }

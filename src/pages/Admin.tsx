@@ -15,6 +15,71 @@ const CATEGORIES = [
   'Подарункові набори та дитячі солодощі'
 ];
 
+interface AdminOrderNotesProps {
+  orderId: string;
+  initialNotes: string;
+}
+
+function AdminOrderNotes({ orderId, initialNotes }: AdminOrderNotesProps) {
+  const [notes, setNotes] = useState(initialNotes);
+  const [isSaving, setIsSaving] = useState(false);
+  const [isSaved, setIsSaved] = useState(false);
+
+  const handleSaveNotes = async () => {
+    setIsSaving(true);
+    setIsSaved(false);
+    try {
+      const orderRef = doc(db, 'orders', orderId);
+      await updateDoc(orderRef, { adminNotes: notes.trim() });
+      setIsSaved(true);
+      setTimeout(() => setIsSaved(false), 3000);
+    } catch (e) {
+      console.error("Error saving admin notes: ", e);
+      alert("Не вдалося зберегти нотатки");
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+      <textarea
+        value={notes}
+        onChange={(e) => setNotes(e.target.value)}
+        placeholder="Введіть службові нотатки (номер ТТН, дата проплати, заміна товарів тощо)..."
+        rows={2}
+        style={{
+          width: '100%',
+          padding: '8px 12px',
+          borderRadius: 'var(--border-radius-sm)',
+          border: '1px solid var(--border-light)',
+          backgroundColor: 'var(--bg-primary)',
+          color: 'var(--text-main)',
+          fontSize: '13px',
+          outline: 'none',
+          resize: 'vertical',
+          fontFamily: 'inherit'
+        }}
+      />
+      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+        <button
+          className="btn btn-outline"
+          onClick={handleSaveNotes}
+          disabled={isSaving}
+          style={{ padding: '6px 12px', fontSize: '12px', alignSelf: 'flex-start' }}
+        >
+          {isSaving ? 'Збереження...' : 'Зберегти нотатки'}
+        </button>
+        {isSaved && (
+          <span style={{ fontSize: '12px', color: '#28a745', fontWeight: '500' }}>
+            ✓ Нотатки збережено
+          </span>
+        )}
+      </div>
+    </div>
+  );
+}
+
 export default function Admin() {
   const { currentUser, login, logout } = useAuth();
   
@@ -366,6 +431,8 @@ export default function Admin() {
                       <div style={{ display: 'flex', alignItems: 'center' }}>
                         <span className={`order-status status-${order.status}`}>
                           {order.status === 'new' ? 'Нове' :
+                           order.status === 'awaiting_payment' ? 'Очікує оплати' :
+                           order.status === 'paid' ? 'Оплачено' :
                            order.status === 'processing' ? 'В роботі' :
                            order.status === 'shipped' ? 'Відправлено' :
                            order.status === 'completed' ? 'Виконано' : 'Скасовано'}
@@ -377,6 +444,8 @@ export default function Admin() {
                           style={{ marginLeft: '12px' }}
                         >
                           <option value="new">Нове</option>
+                          <option value="awaiting_payment">Очікує оплати</option>
+                          <option value="paid">Оплачено</option>
                           <option value="processing">В роботі</option>
                           <option value="shipped">Відправлено</option>
                           <option value="completed">Виконано</option>
@@ -416,6 +485,13 @@ export default function Admin() {
                             </li>
                           ))}
                         </ul>
+                      </div>
+
+                      <div className="admin-notes-wrapper" style={{ borderTop: '1px dashed var(--border-light)', paddingTop: '16px', marginTop: '16px' }}>
+                        <h4 style={{ margin: '0 0 8px 0', fontSize: '14px', color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                          <span>📝</span> Нотатки адміністратора (службові):
+                        </h4>
+                        <AdminOrderNotes key={order.id + '-' + (order.adminNotes || '')} orderId={order.id} initialNotes={order.adminNotes || ''} />
                       </div>
                     </div>
 

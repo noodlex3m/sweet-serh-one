@@ -98,8 +98,8 @@ export default function Home({
           <div className="hero-visual">
             <div className="hero-image-wrapper">
               <img 
-                src="https://images.unsplash.com/photo-1517433456452-f9633a875f6f?w=600&auto=format&fit=crop&q=80" 
-                alt="Premium sweets collection" 
+                src="/images/hero_sweets.png" 
+                alt="Оптово-роздрібний склад солодощів" 
                 className="hero-img"
               />
               <div className="floating-badge">
@@ -116,7 +116,7 @@ export default function Home({
         <div className="container">
           <div className="catalog-header">
             <h2 className="section-title">Наш асортимент солодощів</h2>
-            <p className="section-subtitle">Свіжа випічка та ласощі прямо з кондитерського цеху</p>
+            <p className="section-subtitle">Кондитерські вироби високої якості безпосередньо зі складу</p>
             
             {/* Search input */}
             <div className="search-wrapper">

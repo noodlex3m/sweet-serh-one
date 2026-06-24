@@ -429,6 +429,8 @@ export default function Account() {
                           <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
                             <span className={`order-status status-${order.status}`} style={{ fontSize: '11px', padding: '4px 8px', borderRadius: '4px' }}>
                               {order.status === 'new' ? 'Нове' :
+                               order.status === 'awaiting_payment' ? 'Очікує оплати' :
+                               order.status === 'paid' ? 'Оплачено' :
                                order.status === 'processing' ? 'В роботі' :
                                order.status === 'shipped' ? 'Відправлено' :
                                order.status === 'completed' ? 'Виконано' : 'Скасовано'}
@@ -447,6 +449,13 @@ export default function Account() {
                             ))}
                           </ul>
                         </div>
+
+                        {order.adminNotes && (
+                          <div style={{ padding: '12px', backgroundColor: 'rgba(212, 163, 115, 0.08)', borderRadius: 'var(--border-radius-sm)', border: '1px dashed var(--border-light)', marginBottom: '14px' }}>
+                            <span style={{ fontSize: '12px', fontWeight: '600', color: 'var(--text-main)', display: 'block', marginBottom: '4px' }}>📝 Коментар адміністратора:</span>
+                            <p style={{ fontSize: '13px', color: 'var(--text-main)', margin: '0', whiteSpace: 'pre-wrap', lineHeight: '1.4' }}>{order.adminNotes}</p>
+                          </div>
+                        )}
 
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '10px', borderTop: '1px dashed var(--border-light)' }}>
                           <div>

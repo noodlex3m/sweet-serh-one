@@ -1172,6 +1172,18 @@
   border: 1px solid #3a7de6;
 }
 
+.order-status.status-awaiting_payment {
+  background-color: rgba(255, 159, 67, 0.15);
+  color: #ff9f43;
+  border: 1px solid #ff9f43;
+}
+
+.order-status.status-paid {
+  background-color: rgba(16, 172, 132, 0.15);
+  color: #10ac84;
+  border: 1px solid #10ac84;
+}
+
 .order-status.status-shipped {
   background-color: rgba(147, 112, 219, 0.15);
   color: #9370db;
