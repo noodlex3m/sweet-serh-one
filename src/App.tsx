@@ -282,6 +282,19 @@ function App() {
 				...orderData,
 			};
 
+			// Trigger Telegram notification asynchronously (don't block checkout completion)
+			try {
+				fetch("/.netlify/functions/telegram-notify", {
+					method: "POST",
+					headers: {
+						"Content-Type": "application/json",
+					},
+					body: JSON.stringify({ order: newOrder }),
+				}).catch((err) => console.error("Async Telegram notification error:", err));
+			} catch (e) {
+				console.error("Error triggering Telegram notification:", e);
+			}
+
 			setSubmittedOrder(newOrder);
 			setCart([]);
 
