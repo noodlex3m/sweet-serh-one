@@ -76,7 +76,7 @@ export const handler: Handler = async (event) => {
       `💳 *Спосіб оплати:* ${paymentText}\n\n` +
       `📦 *Товари:*\n${itemsText}\n\n` +
       `💰 *Загальна сума:* *${order.totalAmount} грн*\n\n` +
-      `🔗 [Перейти в адмін-панель](https://sweet-serh-one.netlify.app/admin)`; // Note: Update with actual production domain if needed, or leave dynamic.
+      `🔗 [Перейти в адмін-панель](https://sweet.serh.one/admin)`;
 
     // Send request to Telegram Bot API
     const telegramUrl = `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`;
