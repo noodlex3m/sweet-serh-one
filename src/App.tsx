@@ -6,7 +6,7 @@ import "./App.css";
 import { db } from "./services/firebase";
 import { collection, addDoc, doc, getDoc, getDocs } from "firebase/firestore";
 import { useAuth } from "./context/AuthContext";
-import { fetchCities, fetchWarehouses } from "./services/novaPoshta";
+import { fetchCities, fetchWarehouses, getFunctionUrl } from "./services/novaPoshta";
 import type { NovaPoshtaCity, NovaPoshtaWarehouse } from "./services/novaPoshta";
 
 // Import pages
@@ -285,7 +285,7 @@ function App() {
 
 			// Trigger Telegram notification asynchronously (don't block checkout completion)
 			try {
-				fetch("/.netlify/functions/telegram-notify", {
+				fetch(getFunctionUrl("/.netlify/functions/telegram-notify"), {
 					method: "POST",
 					headers: {
 						"Content-Type": "application/json",

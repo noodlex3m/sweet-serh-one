@@ -94,6 +94,12 @@ export default function Admin() {
   const [isProductFormOpen, setIsProductFormOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
 
+  // Order editing states
+  const [editingOrderId, setEditingOrderId] = useState<string | null>(null);
+  const [editingItems, setEditingItems] = useState<CartItem[]>([]);
+  const [isSavingOrder, setIsSavingOrder] = useState(false);
+  const [productSearchQuery, setProductSearchQuery] = useState('');
+
   // Auth form states
   const [adminEmail, setAdminEmail] = useState('');
   const [adminPassword, setAdminPassword] = useState('');
@@ -318,6 +324,75 @@ export default function Admin() {
     }
   };
 
+  // Order editing functions
+  const startEditingOrder = (orderId: string, items: CartItem[]) => {
+    setEditingOrderId(orderId);
+    setEditingItems(JSON.parse(JSON.stringify(items)));
+    setProductSearchQuery('');
+  };
+
+  const cancelEditingOrder = () => {
+    setEditingOrderId(null);
+    setEditingItems([]);
+    setProductSearchQuery('');
+  };
+
+  const updateItemQuantity = (index: number, quantity: number) => {
+    setEditingItems((prev) => {
+      const newItems = [...prev];
+      newItems[index] = { ...newItems[index], quantity };
+      return newItems;
+    });
+  };
+
+  const removeItemFromOrder = (index: number) => {
+    setEditingItems((prev) => prev.filter((_, idx) => idx !== index));
+  };
+
+  const addItemToOrder = (product: Product) => {
+    setEditingItems((prev) => {
+      const existingIdx = prev.findIndex((item) => item.product.id === product.id);
+      if (existingIdx > -1) {
+        const newItems = [...prev];
+        newItems[existingIdx] = {
+          ...newItems[existingIdx],
+          quantity: newItems[existingIdx].quantity + 1,
+        };
+        return newItems;
+      }
+      return [...prev, { product, quantity: 1 }];
+    });
+    setProductSearchQuery('');
+  };
+
+  const saveOrderItems = async (orderId: string) => {
+    if (editingItems.length === 0) {
+      alert('Замовлення не може бути порожнім. Додайте товари або видаліть замовлення.');
+      return;
+    }
+    const hasInvalidQty = editingItems.some((item) => !item.quantity || item.quantity <= 0);
+    if (hasInvalidQty) {
+      alert('Будь ласка, вкажіть коректну кількість для всіх товарів (більше 0).');
+      return;
+    }
+    setIsSavingOrder(true);
+    try {
+      const totalAmount = editingItems.reduce((sum, item) => sum + item.product.price * item.quantity, 0);
+      const orderRef = doc(db, 'orders', orderId);
+      await updateDoc(orderRef, {
+        items: editingItems,
+        totalAmount: Math.round(totalAmount * 100) / 100,
+      });
+      setEditingOrderId(null);
+      setEditingItems([]);
+    } catch (e) {
+      console.error('Error saving edited order items:', e);
+      alert('Не вдалося зберегти зміни замовлення.');
+    } finally {
+      setIsSavingOrder(false);
+    }
+  };
+
   if (!isAdmin) {
     /* ADMIN LOGIN PAGE */
     return (
@@ -475,16 +550,99 @@ export default function Admin() {
                       </div>
 
                       <div className="order-items">
-                        <h4>🛍️ Товари в замовленні:</h4>
-                        <ul>
-                          {order.items.map((item: CartItem, idx: number) => (
-                            <li key={idx}>
-                              <span className="item-title">{item.product.title}</span>
-                              <span className="item-qty">{item.quantity} шт.</span>
-                              <span className="item-price">{(item.product.price * item.quantity).toFixed(2)} грн</span>
-                            </li>
-                          ))}
-                        </ul>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                          <h4 style={{ margin: '0' }}>🛍️ Товари в замовленні:</h4>
+                          {editingOrderId !== order.id && (order.status === 'new' || order.status === 'awaiting_payment') && (
+                            <button
+                              onClick={() => startEditingOrder(order.id, order.items)}
+                              className="btn btn-outline"
+                              style={{ padding: '4px 8px', fontSize: '11px', height: 'auto', borderStyle: 'dashed' }}
+                            >
+                              ✏️ Редагувати склад
+                            </button>
+                          )}
+                        </div>
+
+                        {editingOrderId === order.id ? (
+                          <>
+                            <ul style={{ listStyle: 'none', padding: '0', margin: '0' }}>
+                              {editingItems.map((item, idx) => (
+                                <li key={idx} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '13px', marginBottom: '8px', paddingBottom: '8px', borderBottom: '1px dashed var(--border-light)' }}>
+                                  <div style={{ flexGrow: 1, marginRight: '10px' }}>
+                                    <span style={{ fontWeight: '500', display: 'block', color: 'var(--text-main)' }}>{item.product.title}</span>
+                                    <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>Ціна: {item.product.price.toFixed(2)} грн / {item.product.unit || 'шт'}</span>
+                                  </div>
+                                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                    <input
+                                      type="number"
+                                      min="0.001"
+                                      step="any"
+                                      value={item.quantity === 0 ? '' : item.quantity}
+                                      onChange={(e) => updateItemQuantity(idx, parseFloat(e.target.value) || 0)}
+                                      style={{ width: '70px', padding: '4px 6px', border: '1px solid var(--border-light)', borderRadius: 'var(--border-radius-sm)', fontSize: '13px', textAlign: 'center', backgroundColor: 'var(--bg-primary)', color: 'var(--text-main)' }}
+                                    />
+                                    <span style={{ fontSize: '12px', color: 'var(--text-muted)', minWidth: '24px' }}>{item.product.unit || 'шт.'}</span>
+                                    <button
+                                      onClick={() => removeItemFromOrder(idx)}
+                                      style={{ border: 'none', background: 'none', color: '#dc3545', cursor: 'pointer', fontSize: '16px', padding: '4px' }}
+                                      title="Видалити товар"
+                                    >
+                                      🗑️
+                                    </button>
+                                  </div>
+                                </li>
+                              ))}
+                            </ul>
+
+                            <div className="add-product-wrapper" style={{ marginTop: '16px', padding: '12px', border: '1px dashed var(--border-light)', borderRadius: 'var(--border-radius-sm)', backgroundColor: 'var(--bg-secondary)' }}>
+                              <span style={{ fontSize: '12px', fontWeight: '600', color: 'var(--text-main)', display: 'block', marginBottom: '8px' }}>➕ Додати товар до замовлення:</span>
+                              <input
+                                type="text"
+                                placeholder="Введіть назву для пошуку..."
+                                value={productSearchQuery}
+                                onChange={(e) => setProductSearchQuery(e.target.value)}
+                                style={{ width: '100%', padding: '8px', border: '1px solid var(--border-light)', borderRadius: 'var(--border-radius-sm)', fontSize: '13px', backgroundColor: 'var(--bg-primary)', color: 'var(--text-main)', boxSizing: 'border-box' }}
+                              />
+                              {productSearchQuery.trim().length >= 1 && (
+                                <div className="search-results-dropdown" style={{ backgroundColor: 'var(--bg-primary)', border: '1px solid var(--border-light)', borderRadius: 'var(--border-radius-sm)', marginTop: '4px', maxHeight: '150px', overflowY: 'auto', zIndex: 10 }}>
+                                  {(() => {
+                                    const availableProducts = products.length > 0 ? products : (productsData as unknown as Product[]);
+                                    const filtered = availableProducts.filter(p => p.title.toLowerCase().includes(productSearchQuery.toLowerCase()));
+                                    return (
+                                      <>
+                                        {filtered.slice(0, 5).map(p => (
+                                          <div
+                                            key={p.id}
+                                            onClick={() => addItemToOrder(p)}
+                                            style={{ padding: '8px 12px', fontSize: '12px', cursor: 'pointer', borderBottom: '1px solid var(--border-light)', color: 'var(--text-main)' }}
+                                            className="search-result-item"
+                                          >
+                                            <strong>{p.title}</strong> — {p.price.toFixed(2)} грн / {p.unit || 'шт'}
+                                          </div>
+                                        ))}
+                                        {filtered.length === 0 && (
+                                          <div style={{ padding: '8px 12px', fontSize: '12px', color: 'var(--text-muted)' }}>
+                                            Нічого не знайдено
+                                          </div>
+                                        )}
+                                      </>
+                                    );
+                                  })()}
+                                </div>
+                              )}
+                            </div>
+                          </>
+                        ) : (
+                          <ul>
+                            {order.items.map((item: CartItem, idx: number) => (
+                              <li key={idx}>
+                                <span className="item-title">{item.product.title}</span>
+                                <span className="item-qty">{item.quantity} {item.product.unit || 'шт.'}</span>
+                                <span className="item-price">{(item.product.price * item.quantity).toFixed(2)} грн</span>
+                              </li>
+                            ))}
+                          </ul>
+                        )}
                       </div>
 
                       <div className="admin-notes-wrapper" style={{ borderTop: '1px dashed var(--border-light)', paddingTop: '16px', marginTop: '16px' }}>
@@ -496,17 +654,48 @@ export default function Admin() {
                     </div>
 
                      <div className="order-card-footer" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                       <div>
-                         <span className="total-label">Загальна сума: </span>
-                         <span className="total-val">{order.totalAmount.toFixed(2)} грн</span>
-                       </div>
-                       <button 
-                         className="btn btn-outline" 
-                         onClick={() => window.open(`/order/${order.id}/invoice`, '_blank')}
-                         style={{ padding: '6px 12px', fontSize: '12px', borderColor: 'var(--accent)', color: 'var(--accent)' }}
-                       >
-                         📄 Рахунок-фактура
-                       </button>
+                       {editingOrderId === order.id ? (
+                         <>
+                           <div>
+                             <span className="total-label">Нова сума: </span>
+                             <span className="total-val" style={{ color: 'var(--accent)' }}>
+                               {editingItems.reduce((sum, item) => sum + (item.product.price * item.quantity), 0).toFixed(2)} грн
+                             </span>
+                           </div>
+                           <div style={{ display: 'flex', gap: '8px' }}>
+                             <button 
+                               className="btn" 
+                               onClick={() => saveOrderItems(order.id)}
+                               disabled={isSavingOrder}
+                               style={{ padding: '6px 12px', fontSize: '12px', background: '#28a745', color: '#fff', border: 'none' }}
+                             >
+                               {isSavingOrder ? 'Збереження...' : '💾 Зберегти'}
+                             </button>
+                             <button 
+                               className="btn btn-outline" 
+                               onClick={cancelEditingOrder}
+                               disabled={isSavingOrder}
+                               style={{ padding: '6px 12px', fontSize: '12px' }}
+                             >
+                               Скасувати
+                             </button>
+                           </div>
+                         </>
+                       ) : (
+                         <>
+                           <div>
+                             <span className="total-label">Загальна сума: </span>
+                             <span className="total-val">{order.totalAmount.toFixed(2)} грн</span>
+                           </div>
+                           <button 
+                             className="btn btn-outline" 
+                             onClick={() => window.open(`/order/${order.id}/invoice`, '_blank')}
+                             style={{ padding: '6px 12px', fontSize: '12px', borderColor: 'var(--accent)', color: 'var(--accent)' }}
+                           >
+                             📄 Рахунок-фактура
+                           </button>
+                         </>
+                       )}
                      </div>
                   </div>
                 ))}

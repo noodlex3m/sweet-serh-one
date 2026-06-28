@@ -196,7 +196,7 @@ export default function Invoice() {
 
   // Format date to local Ukrainian standard
   const orderDate = order.createdAt 
-    ? (order.createdAt instanceof Date ? order.createdAt : new Date((order.createdAt as any).seconds * 1000)).toLocaleDateString('uk-UA')
+    ? (order.createdAt instanceof Date ? order.createdAt : new Date((order.createdAt as unknown as { seconds: number }).seconds * 1000)).toLocaleDateString('uk-UA')
     : new Date().toLocaleDateString('uk-UA');
 
   return (

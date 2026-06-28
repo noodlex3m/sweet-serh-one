@@ -57,7 +57,7 @@ export const handler: Handler = async (event) => {
 
     // Format items list
     const itemsText = order.items
-      .map((item: any, idx: number) => {
+      .map((item: { product: { title: string; price: number; unit?: string; packageWeight?: string }; quantity: number }, idx: number) => {
         const p = item.product;
         const totalItemPrice = p.price * item.quantity;
         const unitText = p.unit ? ` ${p.unit}` : ' шт.';
