@@ -55,14 +55,36 @@ export const handler: Handler = async (event) => {
     if (order.paymentMethod === 'cash_on_delivery') paymentText = '💵 Накладений платіж';
     else if (order.paymentMethod === 'iban') paymentText = '🏦 Оплата на рахунок ФОП (IBAN)';
 
+    // Helper to calculate applied price
+    const getItemPrice = (item: { product: { price: number; wholesalePrice?: number; wholesaleMinQty?: number }; quantity: number }): number => {
+      const { product, quantity } = item;
+      if (
+        product.wholesalePrice &&
+        product.wholesalePrice > 0 &&
+        product.wholesaleMinQty &&
+        product.wholesaleMinQty > 0 &&
+        quantity >= product.wholesaleMinQty
+      ) {
+        return product.wholesalePrice;
+      }
+      return product.price;
+    };
+
+    // Calculate savings
+    const totalRetail = order.items.reduce((acc: number, item: any) => acc + item.product.price * item.quantity, 0);
+    const savings = totalRetail - order.totalAmount;
+
     // Format items list
     const itemsText = order.items
-      .map((item: { product: { title: string; price: number; unit?: string; packageWeight?: string }; quantity: number }, idx: number) => {
+      .map((item: { product: { title: string; price: number; unit?: string; packageWeight?: string; wholesalePrice?: number; wholesaleMinQty?: number }; quantity: number }, idx: number) => {
         const p = item.product;
-        const totalItemPrice = p.price * item.quantity;
+        const currentPrice = getItemPrice(item);
+        const totalItemPrice = currentPrice * item.quantity;
         const unitText = p.unit ? ` ${p.unit}` : ' шт.';
         const weightText = p.packageWeight ? ` (вага: ${p.packageWeight})` : '';
-        return `${idx + 1}. *${p.title}*${weightText}\n   Кількість: ${item.quantity}${unitText} x ${p.price} грн = *${totalItemPrice} грн*`;
+        const isWholesale = currentPrice < p.price;
+        const wholesaleIndicator = isWholesale ? ' 🏷️ (ОПТ)' : '';
+        return `${idx + 1}. *${p.title}*${weightText}\n   Кількість: ${item.quantity}${unitText} x ${currentPrice} грн = *${totalItemPrice.toFixed(2)} грн*${wholesaleIndicator}`;
       })
       .join('\n\n');
 
@@ -75,6 +97,7 @@ export const handler: Handler = async (event) => {
       `📍 *Адреса:* ${order.deliveryAddress}\n\n` +
       `💳 *Спосіб оплати:* ${paymentText}\n\n` +
       `📦 *Товари:*\n${itemsText}\n\n` +
+      (savings > 0.01 ? `🎁 *Заощаджено на опті:* -${savings.toFixed(2)} грн\n` : '') +
       `💰 *Загальна сума:* *${order.totalAmount} грн*\n\n` +
       `🔗 [Перейти в адмін-панель](https://sweet.serh.one/admin)`;
 
