@@ -1,5 +1,6 @@
 import { useState, useMemo } from 'react'
 import type { Product } from '../types'
+import './Home.css'
 
 interface HomeProps {
   products: Product[];
@@ -207,15 +208,15 @@ export default function Home({
                           </div>
                         )}
 
-                        <div className="product-footer" style={{ marginTop: 'auto', paddingTop: '12px', borderTop: '1px solid var(--border-light)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <div className="product-footer product-footer-container">
                           <div className="product-price">
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                            <div className="product-price-wrapper">
                               <div>
-                                <span className="price-val" style={{ fontSize: '1.2rem', fontWeight: '700', color: 'var(--text-main)' }}>{product.price.toFixed(2)}</span>
-                                <span className="price-currency" style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}> грн/{product.unit || 'кг'}</span>
+                                <span className="price-val product-price-value">{product.price.toFixed(2)}</span>
+                                <span className="price-currency product-price-unit"> грн/{product.unit || 'кг'}</span>
                               </div>
                               {product.wholesalePrice && product.wholesalePrice > 0 && product.wholesaleMinQty && product.wholesaleMinQty > 0 && (
-                                <div className="wholesale-promo-badge" style={{ fontSize: '11px', color: '#28a745', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '2px' }}>
+                                <div className="wholesale-promo-badge">
                                   <span>🏷️ Опт: {product.wholesalePrice.toFixed(2)} грн (від {product.wholesaleMinQty} {product.unit || 'кг'})</span>
                                 </div>
                               )}

@@ -3,8 +3,9 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '../services/firebase';
 import { useAuth } from '../context/AuthContext';
-import type { Order } from '../types';
+import type { Order, CartItem } from '../types';
 import { getItemPrice } from '../utils/pricing';
+import './Invoice.css';
 
 // Helper to convert number to Ukrainian words for the invoice
 function numberToUkrainianWords(num: number): string {
@@ -17,7 +18,6 @@ function numberToUkrainianWords(num: number): string {
   const teens = ['десять', 'одинадцять', 'дванадцять', 'тринадцять', 'чотирнадцять', 'п\'ятнадцять', 'шістнадцять', 'сімнадцять', 'вісімнадцять', 'дев\'ятнадцять'];
   const tens = ['', '', 'двадцять', 'тридцять', 'сорок', 'п\'ятдесят', 'шістдесят', 'сімдесят', 'вісімдесят', 'дев\'яносто'];
   const hundreds = ['', 'сто', 'двісті', 'триста', 'чотириста', 'п\'ятсот', 'шістсот', 'сімсот', 'вісімсот', 'дев\'ятсот'];
-
 
   function getWordGroup(n: number, isFeminine: boolean): string {
     let result = '';
@@ -173,9 +173,9 @@ export default function Invoice() {
 
   if (loading) {
     return (
-      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', fontFamily: 'Outfit, sans-serif' }}>
-        <div style={{ textAlign: 'center' }}>
-          <div style={{ border: '4px solid var(--border-light)', borderTop: '4px solid var(--accent)', borderRadius: '50%', width: '40px', height: '40px', animation: 'spin 1s linear infinite', margin: '0 auto 16px auto' }}></div>
+      <div className="invoice-loading-wrapper">
+        <div className="invoice-loading-box">
+          <div className="invoice-loading-spinner"></div>
           <p>Завантаження рахунку на оплату...</p>
         </div>
       </div>
@@ -184,11 +184,11 @@ export default function Invoice() {
 
   if (error || !order) {
     return (
-      <div style={{ padding: '40px', maxWidth: '600px', margin: '80px auto', textAlign: 'center', fontFamily: 'Outfit, sans-serif', border: '1px solid var(--border-light)', borderRadius: '12px', boxShadow: 'var(--shadow-sm)' }}>
-        <span style={{ fontSize: '48px' }}>⚠️</span>
-        <h2 style={{ color: 'var(--text-primary)', margin: '16px 0 8px 0' }}>Помилка доступу</h2>
-        <p style={{ color: 'var(--text-secondary)', marginBottom: '24px' }}>{error || 'Замовлення не знайдено'}</p>
-        <button className="btn" onClick={() => navigate('/account')} style={{ background: 'var(--accent)', color: '#fff', border: 'none', padding: '10px 20px', borderRadius: '8px', cursor: 'pointer' }}>
+      <div className="invoice-error-wrapper">
+        <span className="invoice-error-icon">⚠️</span>
+        <h2 className="invoice-error-title">Помилка доступу</h2>
+        <p className="invoice-error-desc">{error || 'Замовлення не знайдено'}</p>
+        <button className="btn invoice-error-btn" onClick={() => navigate('/account')}>
           Повернутися в кабінет
         </button>
       </div>
@@ -201,75 +201,75 @@ export default function Invoice() {
     : new Date().toLocaleDateString('uk-UA');
 
   return (
-    <div className="invoice-print-container" style={{ padding: '20px', maxWidth: '800px', margin: '0 auto', fontFamily: 'Outfit, sans-serif', color: '#000', backgroundColor: '#fff' }}>
+    <div className="invoice-print-container">
       
       {/* Interactive print control bar (hidden in CSS print mode) */}
-      <div className="print-controls" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', padding: '12px 20px', backgroundColor: '#f8f9fa', border: '1px solid #dee2e6', borderRadius: '8px' }}>
+      <div className="print-controls">
         <div>
-          <span style={{ fontWeight: '600', fontSize: '15px' }}>📄 Рахунок готовий до друку або збереження в PDF</span>
+          <span className="print-controls-title">📄 Рахунок готовий до друку або збереження в PDF</span>
         </div>
-        <div style={{ display: 'flex', gap: '10px' }}>
-          <button onClick={() => window.print()} style={{ backgroundColor: '#ff7e1b', color: '#fff', border: 'none', padding: '8px 16px', borderRadius: '6px', cursor: 'pointer', fontWeight: '500' }}>
+        <div className="print-controls-actions">
+          <button onClick={() => window.print()} className="print-controls-btn-print">
             🖨️ Друкувати / Зберегти як PDF
           </button>
-          <button onClick={() => navigate('/account')} style={{ backgroundColor: '#6c757d', color: '#fff', border: 'none', padding: '8px 16px', borderRadius: '6px', cursor: 'pointer', fontWeight: '500' }}>
+          <button onClick={() => navigate('/account')} className="print-controls-btn-back">
             Назад до кабінету
           </button>
         </div>
       </div>
 
       {/* Actual A4 Printable Invoice Form */}
-      <div className="invoice-sheet" style={{ border: '1px solid #eee', padding: '30px', backgroundColor: '#fff' }}>
+      <div className="invoice-sheet">
         
         {/* Invoice Header / Supplier Banner */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '2px solid #000', paddingBottom: '16px', marginBottom: '20px' }}>
+        <div className="invoice-supplier-banner">
           <div>
-            <h1 style={{ margin: '0 0 6px 0', fontSize: '20px', fontWeight: 'bold' }}>{fopName}</h1>
-            <p style={{ margin: '0', fontSize: '13px', color: '#555' }}>
+            <h1 className="invoice-supplier-name">{fopName}</h1>
+            <p className="invoice-supplier-desc">
               Кондитерський оптово-роздрібний склад солодощів «sweet-serh-one»<br />
               Чернівці, Україна {fopPhone ? `| Тел: ${fopPhone}` : ''}
             </p>
           </div>
-          <div style={{ textAlign: 'right' }}>
-            <span style={{ fontSize: '24px' }}>🍰</span>
-            <p style={{ margin: '4px 0 0 0', fontSize: '12px', fontWeight: 'bold', color: '#777' }}>sweet.serh.one</p>
+          <div className="invoice-supplier-logo">
+            <span className="invoice-supplier-logo-icon">🍰</span>
+            <p className="invoice-supplier-logo-domain">sweet.serh.one</p>
           </div>
         </div>
 
         {/* Invoice Title */}
-        <div style={{ textAlign: 'center', marginBottom: '25px' }}>
-          <h2 style={{ margin: '0', fontSize: '18px', fontWeight: 'bold' }}>
+        <div className="invoice-title-block">
+          <h2 className="invoice-title">
             РАХУНОК-ФАКТУРА № {order.id.substring(0, 8).toUpperCase()}
           </h2>
-          <p style={{ margin: '4px 0 0 0', fontSize: '14px' }}>від {orderDate} р.</p>
+          <p className="invoice-date">від {orderDate} р.</p>
         </div>
 
         {/* Supplier IBAN Details (Standartized Ukrainian Bill Format) */}
-        <table style={{ width: '100%', borderCollapse: 'collapse', marginBottom: '25px', fontSize: '13px' }}>
+        <table className="invoice-details-table">
           <tbody>
             <tr>
-              <td style={{ border: '1px solid #000', padding: '6px', fontWeight: 'bold', width: '30%' }}>Одержувач</td>
-              <td style={{ border: '1px solid #000', padding: '6px' }}>{fopName}</td>
+              <td className="label-cell">Одержувач</td>
+              <td>{fopName}</td>
             </tr>
             <tr>
-              <td style={{ border: '1px solid #000', padding: '6px', fontWeight: 'bold' }}>Код отримувача (ЄДРПОУ / ІПН)</td>
-              <td style={{ border: '1px solid #000', padding: '6px' }}>{fopIpn}</td>
+              <td className="label-cell">Код отримувача (ЄДРПОУ / ІПН)</td>
+              <td>{fopIpn}</td>
             </tr>
             <tr>
-              <td style={{ border: '1px solid #000', padding: '6px', fontWeight: 'bold' }}>Банк одержувача</td>
-              <td style={{ border: '1px solid #000', padding: '6px' }}>{fopBank}</td>
+              <td className="label-cell">Банк одержувача</td>
+              <td>{fopBank}</td>
             </tr>
             <tr>
-              <td style={{ border: '1px solid #000', padding: '6px', fontWeight: 'bold' }}>МФО банку</td>
-              <td style={{ border: '1px solid #000', padding: '6px' }}>{fopMfo}</td>
+              <td className="label-cell">МФО банку</td>
+              <td>{fopMfo}</td>
             </tr>
             <tr>
-              <td style={{ border: '1px solid #000', padding: '6px', fontWeight: 'bold' }}>Рахунок одержувача (IBAN)</td>
-              <td style={{ border: '1px solid #000', padding: '6px', fontWeight: 'bold', letterSpacing: '0.5px' }}>{fopIban}</td>
+              <td className="label-cell">Рахунок одержувача (IBAN)</td>
+              <td className="iban-cell">{fopIban}</td>
             </tr>
             <tr>
-              <td style={{ border: '1px solid #000', padding: '6px', fontWeight: 'bold' }}>Призначення платежу</td>
-              <td style={{ border: '1px solid #000', padding: '6px', color: '#333' }}>
+              <td className="label-cell">Призначення платежу</td>
+              <td className="purpose-cell">
                 Оплата за замовлення № {order.id.substring(0, 8).toUpperCase()} від {orderDate} р. без ПДВ
               </td>
             </tr>
@@ -277,56 +277,56 @@ export default function Invoice() {
         </table>
 
         {/* Payer and Delivery Details */}
-        <div style={{ display: 'flex', gap: '20px', marginBottom: '25px', fontSize: '13px' }}>
-          <div style={{ flex: 1, padding: '10px', border: '1px solid #ccc', borderRadius: '4px' }}>
-            <h3 style={{ margin: '0 0 8px 0', fontSize: '14px', borderBottom: '1px solid #eee', paddingBottom: '4px', fontWeight: 'bold' }}>
+        <div className="invoice-parties-block">
+          <div className="invoice-party-box">
+            <h3 className="invoice-party-title">
               Платник (Замовник)
             </h3>
-            <p style={{ margin: '0 0 4px 0' }}><strong>Ім'я:</strong> {order.customerName}</p>
-            <p style={{ margin: '0 0 4px 0' }}><strong>Телефон:</strong> {order.customerPhone}</p>
-            <p style={{ margin: '0' }}><strong>Email:</strong> {order.customerEmail || 'не вказано'}</p>
+            <p><strong>Ім'я:</strong> {order.customerName}</p>
+            <p><strong>Телефон:</strong> {order.customerPhone}</p>
+            <p><strong>Email:</strong> {order.customerEmail || 'не вказано'}</p>
           </div>
-          <div style={{ flex: 1, padding: '10px', border: '1px solid #ccc', borderRadius: '4px' }}>
-            <h3 style={{ margin: '0 0 8px 0', fontSize: '14px', borderBottom: '1px solid #eee', paddingBottom: '4px', fontWeight: 'bold' }}>
+          <div className="invoice-party-box">
+            <h3 className="invoice-party-title">
               Доставка
             </h3>
-            <p style={{ margin: '0 0 4px 0' }}>
+            <p>
               <strong>Спосіб:</strong> {
                 order.deliveryMethod === 'nova_poshta' ? '🚀 Нова Пошта' :
                 order.deliveryMethod === 'ukr_poshta' ? '✉️ Укрпошта' : '🏬 Самовивіз з Чернівців'
               }
             </p>
-            <p style={{ margin: '0' }}><strong>Адреса:</strong> {order.deliveryAddress}</p>
+            <p><strong>Адреса:</strong> {order.deliveryAddress}</p>
           </div>
         </div>
 
         {/* Specification Items Table */}
-        <table style={{ width: '100%', borderCollapse: 'collapse', marginBottom: '20px', fontSize: '13px' }}>
+        <table className="invoice-items-table">
           <thead>
-            <tr style={{ backgroundColor: '#f1f1f1' }}>
-              <th style={{ border: '1px solid #000', padding: '6px', textAlign: 'center', width: '5%' }}>№</th>
-              <th style={{ border: '1px solid #000', padding: '6px', textAlign: 'left', width: '50%' }}>Товар (Опис)</th>
-              <th style={{ border: '1px solid #000', padding: '6px', textAlign: 'center', width: '10%' }}>Од. вим.</th>
-              <th style={{ border: '1px solid #000', padding: '6px', textAlign: 'center', width: '10%' }}>Кіл-сть</th>
-              <th style={{ border: '1px solid #000', padding: '6px', textAlign: 'right', width: '10%' }}>Ціна</th>
-              <th style={{ border: '1px solid #000', padding: '6px', textAlign: 'right', width: '15%' }}>Сума, грн</th>
+            <tr>
+              <th className="col-num">№</th>
+              <th className="col-title">Товар (Опис)</th>
+              <th className="col-unit">Од. вим.</th>
+              <th className="col-qty">Кіл-сть</th>
+              <th className="col-price">Ціна</th>
+              <th className="col-amount">Сума, грн</th>
             </tr>
           </thead>
           <tbody>
-            {order.items.map((item, idx) => {
+            {order.items.map((item: CartItem, idx: number) => {
               const p = item.product;
               const priceApplied = getItemPrice(item);
               return (
                 <tr key={idx}>
-                  <td style={{ border: '1px solid #000', padding: '6px', textAlign: 'center' }}>{idx + 1}</td>
-                  <td style={{ border: '1px solid #000', padding: '6px' }}>
+                  <td className="cell-center">{idx + 1}</td>
+                  <td>
                     {p.title}
-                    {p.packageWeight ? <span style={{ fontSize: '11px', color: '#555', display: 'block' }}>Вага уп: {p.packageWeight}</span> : null}
+                    {p.packageWeight ? <span className="package-weight-desc">Вага уп: {p.packageWeight}</span> : null}
                   </td>
-                  <td style={{ border: '1px solid #000', padding: '6px', textAlign: 'center' }}>{p.unit || 'шт.'}</td>
-                  <td style={{ border: '1px solid #000', padding: '6px', textAlign: 'center' }}>{item.quantity}</td>
-                  <td style={{ border: '1px solid #000', padding: '6px', textAlign: 'right' }}>{priceApplied.toFixed(2)}</td>
-                  <td style={{ border: '1px solid #000', padding: '6px', textAlign: 'right' }}>
+                  <td className="cell-center">{p.unit || 'шт.'}</td>
+                  <td className="cell-center">{item.quantity}</td>
+                  <td className="cell-right">{priceApplied.toFixed(2)}</td>
+                  <td className="cell-right">
                     {(priceApplied * item.quantity).toFixed(2)}
                   </td>
                 </tr>
@@ -334,37 +334,37 @@ export default function Invoice() {
             })}
             
             {/* Totals Row */}
-            <tr style={{ fontWeight: 'bold' }}>
-              <td colSpan={5} style={{ border: '1px solid #000', padding: '6px', textAlign: 'right' }}>Разом без ПДВ:</td>
-              <td style={{ border: '1px solid #000', padding: '6px', textAlign: 'right' }}>{order.totalAmount.toFixed(2)}</td>
+            <tr className="totals-row">
+              <td colSpan={5} className="cell-right">Разом без ПДВ:</td>
+              <td className="cell-right">{order.totalAmount.toFixed(2)}</td>
             </tr>
-            <tr style={{ fontWeight: 'bold' }}>
-              <td colSpan={5} style={{ border: '1px solid #000', padding: '6px', textAlign: 'right' }}>ПДВ:</td>
-              <td style={{ border: '1px solid #000', padding: '6px', textAlign: 'right' }}>0.00</td>
+            <tr className="totals-row">
+              <td colSpan={5} className="cell-right">ПДВ:</td>
+              <td className="cell-right">0.00</td>
             </tr>
-            <tr style={{ fontWeight: 'bold', fontSize: '14px', backgroundColor: '#f1f1f1' }}>
-              <td colSpan={5} style={{ border: '1px solid #000', padding: '6px', textAlign: 'right' }}>Всього до сплати:</td>
-              <td style={{ border: '1px solid #000', padding: '6px', textAlign: 'right' }}>{order.totalAmount.toFixed(2)}</td>
+            <tr className="grand-totals-row">
+              <td colSpan={5} className="cell-right">Всього до сплати:</td>
+              <td className="cell-right">{order.totalAmount.toFixed(2)}</td>
             </tr>
           </tbody>
         </table>
 
         {/* Total in words and billing info */}
-        <div style={{ fontSize: '13px', marginBottom: '30px', borderBottom: '1px solid #000', paddingBottom: '10px' }}>
-          <p style={{ margin: '0 0 6px 0' }}>
+        <div className="invoice-summary-words">
+          <p>
             Всього найменувань <strong>{order.items.length}</strong>, на суму <strong>{order.totalAmount.toFixed(2)} грн.</strong>
           </p>
-          <p style={{ margin: '0', fontWeight: 'bold', fontStyle: 'italic' }}>
+          <p className="in-words">
             Сума прописом: {numberToUkrainianWords(order.totalAmount)}
           </p>
         </div>
 
         {/* Step-by-Step Payment Instructions */}
-        <div style={{ fontSize: '12px', border: '1px dashed #777', padding: '12px', borderRadius: '4px', marginBottom: '40px', backgroundColor: '#fcfcfc' }}>
-          <h4 style={{ margin: '0 0 6px 0', fontSize: '13px', fontWeight: 'bold', color: '#ff7e1b' }}>
+        <div className="invoice-instructions-block">
+          <h4 className="invoice-instructions-title">
             ℹ️ Як швидко здійснити оплату в банківському додатку (Приват24 / Монобанк тощо):
           </h4>
-          <ol style={{ margin: '0', paddingLeft: '20px', lineHeight: '1.5' }}>
+          <ol className="invoice-instructions-list">
             <li>Відкрийте банківський додаток на вашому смартфоні.</li>
             <li>Виберіть меню <strong>«Платежі»</strong> або <strong>«За реквізитами»</strong>.</li>
             <li>Введіть наш номер рахунку (IBAN): <strong>{fopIban}</strong>.</li>
@@ -376,44 +376,18 @@ export default function Invoice() {
         </div>
 
         {/* Signatures Footer */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', marginTop: '40px' }}>
-          <div style={{ width: '45%', borderBottom: '1px solid #000', paddingBottom: '4px' }}>
+        <div className="invoice-signatures-block">
+          <div className="invoice-signature-line">
             <strong>Виписав (постачальник):</strong>
-            <div style={{ height: '35px' }}></div>
+            <div className="invoice-signature-space"></div>
           </div>
-          <div style={{ width: '45%', borderBottom: '1px solid #000', paddingBottom: '4px' }}>
+          <div className="invoice-signature-line">
             <strong>Отримав (покупець):</strong>
-            <div style={{ height: '35px' }}></div>
+            <div className="invoice-signature-space"></div>
           </div>
         </div>
 
       </div>
-
-      {/* Print only CSS Styles */}
-      <style>{`
-        @media print {
-          body {
-            background-color: #fff !important;
-            color: #000 !important;
-          }
-          .print-controls {
-            display: none !important;
-          }
-          .invoice-print-container {
-            padding: 0 !important;
-            margin: 0 !important;
-            max-width: 100% !important;
-          }
-          .invoice-sheet {
-            border: none !important;
-            padding: 0 !important;
-          }
-        }
-        @keyframes spin {
-          0% { transform: rotate(0deg); }
-          100% { transform: rotate(360deg); }
-        }
-      `}</style>
 
     </div>
   );

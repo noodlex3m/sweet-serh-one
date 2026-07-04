@@ -4,6 +4,7 @@ import { doc, getDoc, setDoc, collection, query, where, onSnapshot, updateDoc } 
 import { db, auth } from '../services/firebase';
 import { GoogleAuthProvider, signInWithPopup, signInWithEmailAndPassword, createUserWithEmailAndPassword } from 'firebase/auth';
 import type { Order, CartItem } from '../types';
+import './Account.css';
 
 interface UserProfile {
   fullName: string;
@@ -203,13 +204,13 @@ export default function Account() {
     <>
       <title>Особистий кабінет | sweet-serh-one</title>
       <meta name="robots" content="noindex, nofollow" />
-      <section className="account-section" style={{ padding: '60px 0', flexGrow: 1, backgroundColor: 'var(--bg-primary)' }}>
-        <div className="container" style={{ maxWidth: '600px', margin: '0 auto' }}>
+      <section className="account-section">
+        <div className="container account-container">
         {!currentUser ? (
           /* AUTHENTICATION FORM */
-          <div className="admin-login-card" style={{ maxWidth: '100%', margin: '0' }}>
+          <div className="admin-login-card auth-card-wrapper">
             <h3>{isLoginMode ? 'Вхід до особистого кабінету' : 'Реєстрація особистого кабінету'}</h3>
-            <p style={{ marginBottom: '24px' }}>
+            <p>
               {isLoginMode ? 'Увійдіть для швидкого заповнення даних доставки' : 'Створіть акаунт, щоб зберігати свої дані доставки та зв\'язку'}
             </p>
 
@@ -240,31 +241,30 @@ export default function Account() {
                 />
               </div>
 
-              <button type="submit" className="btn login-btn" style={{ width: '100%', padding: '12px' }} disabled={isProcessing}>
+              <button type="submit" className="btn login-btn profile-save-btn" disabled={isProcessing}>
                 {isProcessing ? 'Обробка...' : isLoginMode ? 'Увійти' : 'Зареєструватися'}
               </button>
             </form>
 
-            <div style={{ margin: '20px 0', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px' }}>
-              <div style={{ height: '1px', flexGrow: 1, backgroundColor: 'var(--border-light)' }}></div>
-              <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>або</span>
-              <div style={{ height: '1px', flexGrow: 1, backgroundColor: 'var(--border-light)' }}></div>
+            <div className="auth-divider-row">
+              <div className="auth-divider-line"></div>
+              <span className="auth-divider-text">або</span>
+              <div className="auth-divider-line"></div>
             </div>
 
             <button 
               onClick={handleGoogleSignIn} 
-              className="btn btn-outline" 
-              style={{ width: '100%', padding: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
+              className="btn btn-outline google-signin-btn" 
               disabled={isProcessing}
             >
               <span>🌐</span> Увійти через Google
             </button>
 
-            <p style={{ marginTop: '24px', textAlign: 'center', fontSize: '14px', color: 'var(--text-muted)' }}>
+            <p className="auth-switch-text">
               {isLoginMode ? 'Ще немає акаунта? ' : 'Вже зареєстровані? '}
               <button 
                 onClick={() => { setIsLoginMode(!isLoginMode); setAuthError(''); }} 
-                style={{ background: 'none', border: 'none', color: 'var(--accent-berry)', fontWeight: '600', cursor: 'pointer', textDecoration: 'underline' }}
+                className="auth-switch-btn"
               >
                 {isLoginMode ? 'Створити акаунт' : 'Увійти'}
               </button>
@@ -272,30 +272,28 @@ export default function Account() {
           </div>
         ) : (
           /* USER PROFILE DISPLAY */
-          <div className="admin-login-card" style={{ maxWidth: '100%', margin: '0', padding: '32px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px', paddingBottom: '16px', borderBottom: '1px solid var(--border-light)' }}>
+          <div className="admin-login-card account-profile-card">
+            <div className="account-profile-header">
               <div>
-                <span style={{ fontSize: '12px', textTransform: 'uppercase', letterSpacing: '1px', color: 'var(--text-muted)' }}>Особистий кабінет</span>
-                <h3 style={{ margin: '4px 0 0 0', textAlign: 'left', fontSize: '20px' }}>{profile.fullName || currentUser.displayName || currentUser.email}</h3>
+                <span className="account-profile-subtitle">Особистий кабінет</span>
+                <h3 className="account-profile-title">{profile.fullName || currentUser.displayName || currentUser.email}</h3>
               </div>
-              <button className="btn btn-outline" style={{ padding: '6px 12px', fontSize: '12px' }} onClick={logout}>
+              <button className="btn btn-outline account-logout-btn" onClick={logout}>
                 Вийти
               </button>
             </div>
 
             {/* TAB BUTTONS */}
-            <div style={{ display: 'flex', gap: '12px', marginBottom: '24px', borderBottom: '1px solid var(--border-light)', paddingBottom: '12px' }}>
+            <div className="account-tabs">
               <button 
-                className={`btn ${activeTab === 'profile' ? '' : 'btn-outline'}`} 
+                className={`btn ${activeTab === 'profile' ? '' : 'btn-outline'} account-tab-btn`} 
                 onClick={() => setActiveTab('profile')}
-                style={{ padding: '8px 16px', fontSize: '14px' }}
               >
                 👤 Мої дані
               </button>
               <button 
-                className={`btn ${activeTab === 'orders' ? '' : 'btn-outline'}`} 
+                className={`btn ${activeTab === 'orders' ? '' : 'btn-outline'} account-tab-btn`} 
                 onClick={() => setActiveTab('orders')}
-                style={{ padding: '8px 16px', fontSize: '14px' }}
               >
                 🛍️ Мої замовлення ({orders.length})
               </button>
@@ -304,12 +302,12 @@ export default function Account() {
             {activeTab === 'profile' ? (
               <form onSubmit={handleProfileSave}>
                 {saveSuccess && (
-                  <div style={{ backgroundColor: 'rgba(40, 167, 69, 0.1)', color: '#28a745', padding: '12px', borderRadius: 'var(--border-radius-sm)', fontSize: '14px', marginBottom: '20px', border: '1px solid rgba(40, 167, 69, 0.2)', textAlign: 'center' }}>
+                  <div className="profile-success-msg">
                     ✓ Зміни збережено. Дані будуть автоматично підставлятися при покупці.
                   </div>
                 )}
 
-                <h4 style={{ fontSize: '16px', color: 'var(--text-main)', marginBottom: '16px', borderBottom: '1px dashed var(--border-light)', paddingBottom: '6px' }}>
+                <h4 className="profile-section-title">
                   📋 Особисті дані покупця
                 </h4>
 
@@ -346,11 +344,11 @@ export default function Account() {
                     placeholder="м. Чернівці, Відділення Нової Пошти №3"
                     value={profile.address}
                     onChange={handleProfileChange}
-                    style={{ width: '100%', padding: '10px 14px', borderRadius: 'var(--border-radius-sm)', border: '1px solid var(--border-light)', backgroundColor: 'var(--bg-primary)', color: 'var(--text-main)', outline: 'none' }}
+                    className="profile-address-textarea"
                   />
                 </div>
 
-                <h4 style={{ fontSize: '16px', color: 'var(--text-main)', marginTop: '24px', marginBottom: '16px', borderBottom: '1px dashed var(--border-light)', paddingBottom: '6px' }}>
+                <h4 className="profile-section-title sec-mt">
                   💬 Канали зв'язку та соціальні мережі (необов'язково)
                 </h4>
 
@@ -402,32 +400,32 @@ export default function Account() {
                   />
                 </div>
 
-                <button type="submit" className="btn" style={{ width: '100%', padding: '12px', marginTop: '12px' }} disabled={isSaving}>
+                <button type="submit" className="btn profile-save-btn" disabled={isSaving}>
                   {isSaving ? 'Збереження...' : 'Зберегти зміни профілю'}
                 </button>
               </form>
             ) : (
               /* TAB: CLIENT ORDERS LIST */
               <div className="client-orders-section">
-                <h4 style={{ fontSize: '16px', color: 'var(--text-main)', marginBottom: '16px', borderBottom: '1px dashed var(--border-light)', paddingBottom: '6px' }}>
+                <h4 className="profile-section-title">
                   🛍️ Історія ваших замовлень
                 </h4>
                 
                 {loadingOrders ? (
-                  <p style={{ textAlign: 'center', color: 'var(--text-muted)', padding: '20px 0' }}>Завантаження замовлень...</p>
+                  <p className="orders-loading-text">Завантаження замовлень...</p>
                 ) : orders.length > 0 ? (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                  <div className="orders-list-container">
                     {orders.map(order => (
-                      <div key={order.id} className="order-card" style={{ padding: '20px', margin: '0' }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '10px', marginBottom: '12px', paddingBottom: '10px', borderBottom: '1px solid var(--border-light)' }}>
+                      <div key={order.id} className="order-card">
+                        <div className="order-card-header">
                           <div>
-                            <span style={{ fontWeight: '700', fontSize: '14px', color: 'var(--accent-berry)', display: 'block' }}>Замовлення #{order.id.slice(0, 8)}</span>
-                            <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>
+                            <span className="order-card-id">Замовлення #{order.id.slice(0, 8)}</span>
+                            <span className="order-card-date">
                               {new Date(order.createdAt).toLocaleString('uk-UA')}
                             </span>
                           </div>
-                          <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-                            <span className={`order-status status-${order.status}`} style={{ fontSize: '11px', padding: '4px 8px', borderRadius: '4px' }}>
+                          <div className="order-card-header-actions">
+                            <span className={`order-status status-${order.status} order-status-badge`}>
                               {order.status === 'new' ? 'Нове' :
                                order.status === 'awaiting_payment' ? 'Очікує оплати' :
                                order.status === 'paid' ? 'Оплачено' :
@@ -438,51 +436,49 @@ export default function Account() {
                           </div>
                         </div>
 
-                        <div style={{ marginBottom: '12px' }}>
-                          <span style={{ fontSize: '12px', color: 'var(--text-muted)', display: 'block', marginBottom: '6px' }}>Товари:</span>
-                          <ul style={{ listStyle: 'none', padding: '0', margin: '0' }}>
+                        <div className="order-card-items-section">
+                          <span className="order-card-items-label">Товари:</span>
+                          <ul className="order-card-items-list">
                             {order.items?.map((item: CartItem, idx: number) => (
-                              <li key={idx} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', marginBottom: '6px', color: 'var(--text-main)' }}>
-                                <span style={{ fontWeight: '500' }}>{item.product.title}</span>
-                                <span style={{ color: 'var(--text-muted)', marginLeft: '12px', textAlign: 'right' }}>{item.quantity} шт. × {item.product.price} грн</span>
+                              <li key={idx} className="order-card-item">
+                                <span className="order-card-item-title">{item.product.title}</span>
+                                <span className="order-card-item-meta">{item.quantity} шт. × {item.product.price} грн</span>
                               </li>
                             ))}
                           </ul>
                         </div>
 
                         {order.adminNotes && (
-                          <div style={{ padding: '12px', backgroundColor: 'rgba(212, 163, 115, 0.08)', borderRadius: 'var(--border-radius-sm)', border: '1px dashed var(--border-light)', marginBottom: '14px' }}>
-                            <span style={{ fontSize: '12px', fontWeight: '600', color: 'var(--text-main)', display: 'block', marginBottom: '4px' }}>📝 Коментар адміністратора:</span>
-                            <p style={{ fontSize: '13px', color: 'var(--text-main)', margin: '0', whiteSpace: 'pre-wrap', lineHeight: '1.4' }}>{order.adminNotes}</p>
+                          <div className="order-card-notes-box">
+                            <span className="order-card-notes-label">📝 Коментар адміністратора:</span>
+                            <p className="order-card-notes-content">{order.adminNotes}</p>
                           </div>
                         )}
 
                         {order.paymentMethod === 'iban' && order.status === 'new' && (
-                          <div style={{ padding: '10px 12px', backgroundColor: 'rgba(255, 126, 27, 0.05)', border: '1px dashed rgba(255, 126, 27, 0.3)', borderRadius: 'var(--border-radius-sm)', fontSize: '12px', color: '#e66a0d', marginBottom: '14px', lineHeight: '1.4' }}>
+                          <div className="order-card-np-info">
                             ⏳ Менеджер перевіряє наявність товарів на складі. Після підтвердження тут з'явиться офіційний рахунок на оплату (IBAN).
                           </div>
                         )}
 
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '10px', borderTop: '1px dashed var(--border-light)' }}>
+                        <div className="order-card-footer">
                           <div>
-                            <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>Сума до сплати:</span>
-                            <strong style={{ fontSize: '16px', color: 'var(--accent-berry)', display: 'block' }}>{order.totalAmount.toFixed(2)} грн</strong>
+                            <span className="order-card-total-label">Сума до сплати:</span>
+                            <strong className="order-card-total-value">{order.totalAmount.toFixed(2)} грн</strong>
                           </div>
-                          <div style={{ display: 'flex', gap: '8px' }}>
+                          <div className="order-card-actions">
                             {order.paymentMethod === 'iban' && order.status === 'awaiting_payment' && (
                               <button 
-                                className="btn" 
+                                className="btn pdf-invoice-btn" 
                                 onClick={() => window.open(`/order/${order.id}/invoice`, '_blank')}
-                                style={{ padding: '6px 12px', fontSize: '12px', background: '#ff7e1b', color: '#fff', border: 'none' }}
                               >
                                 📄 Рахунок на оплату (PDF)
                               </button>
                             )}
                             {order.status === 'new' && (
                               <button 
-                                className="btn btn-outline" 
+                                className="btn btn-outline cancel-order-btn" 
                                 onClick={() => handleCancelOrder(order.id)}
-                                style={{ padding: '6px 12px', fontSize: '12px', borderColor: '#dc3545', color: '#dc3545' }}
                               >
                                 Скасувати
                               </button>
@@ -493,9 +489,9 @@ export default function Account() {
                     ))}
                   </div>
                 ) : (
-                  <div style={{ textAlign: 'center', padding: '40px 20px', color: 'var(--text-muted)' }}>
-                    <span style={{ fontSize: '40px', display: 'block', marginBottom: '12px' }}>🥧</span>
-                    <p style={{ margin: '0' }}>Ви ще не робили замовлень.</p>
+                  <div className="no-orders-wrapper">
+                    <span className="no-orders-icon">🥧</span>
+                    <p>Ви ще не робили замовлень.</p>
                   </div>
                 )}
               </div>

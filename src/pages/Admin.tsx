@@ -5,6 +5,7 @@ import { collection, query, orderBy, onSnapshot, updateDoc, doc, addDoc, deleteD
 import type { Order, Product, CartItem } from '../types';
 import productsData from '../data/products.json';
 import { getItemPrice } from '../utils/pricing';
+import './Admin.css';
 
 const CATEGORIES = [
   'Печиво та пряники',
@@ -43,36 +44,24 @@ function AdminOrderNotes({ orderId, initialNotes }: AdminOrderNotesProps) {
   };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+    <div className="admin-notes-container">
       <textarea
         value={notes}
         onChange={(e) => setNotes(e.target.value)}
         placeholder="Введіть службові нотатки (номер ТТН, дата проплати, заміна товарів тощо)..."
         rows={2}
-        style={{
-          width: '100%',
-          padding: '8px 12px',
-          borderRadius: 'var(--border-radius-sm)',
-          border: '1px solid var(--border-light)',
-          backgroundColor: 'var(--bg-primary)',
-          color: 'var(--text-main)',
-          fontSize: '13px',
-          outline: 'none',
-          resize: 'vertical',
-          fontFamily: 'inherit'
-        }}
+        className="admin-notes-textarea"
       />
-      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+      <div className="admin-notes-actions-row">
         <button
-          className="btn btn-outline"
+          className="btn btn-outline admin-notes-save-btn"
           onClick={handleSaveNotes}
           disabled={isSaving}
-          style={{ padding: '6px 12px', fontSize: '12px', alignSelf: 'flex-start' }}
         >
           {isSaving ? 'Збереження...' : 'Зберегти нотатки'}
         </button>
         {isSaved && (
-          <span style={{ fontSize: '12px', color: '#28a745', fontWeight: '500' }}>
+          <span className="admin-notes-success-text">
             ✓ Нотатки збережено
           </span>
         )}
@@ -427,9 +416,9 @@ export default function Admin() {
       <>
         <title>Панель керування | sweet-serh-one</title>
         <meta name="robots" content="noindex, nofollow" />
-        <section className="admin-section" style={{ padding: '60px 0', flexGrow: 1, backgroundColor: 'var(--bg-primary)' }}>
-          <div className="container" style={{ maxWidth: '420px', margin: '0 auto' }}>
-          <div className="admin-login-card" style={{ margin: '0' }}>
+        <section className="admin-section">
+          <div className="container admin-login-container">
+          <div className="admin-login-card admin-login-card-nomargin">
             <h3>Вхід для адміністратора</h3>
             <p>Увійдіть, щоб керувати замовленнями та каталогом вашого магазину солодощів</p>
             
@@ -460,7 +449,7 @@ export default function Admin() {
                 />
               </div>
               
-              <button type="submit" className="btn login-btn" style={{ width: '100%', padding: '12px' }} disabled={isLoggingIn}>
+              <button type="submit" className="btn login-btn admin-login-btn" disabled={isLoggingIn}>
                 {isLoggingIn ? 'Вхід...' : 'Увійти'}
               </button>
             </form>
@@ -475,7 +464,7 @@ export default function Admin() {
     <>
       <title>Панель керування | sweet-serh-one</title>
       <meta name="robots" content="noindex, nofollow" />
-      <section className="admin-section" style={{ padding: '60px 0', flexGrow: 1, backgroundColor: 'var(--bg-primary)' }}>
+      <section className="admin-section">
         <div className="container">
         
         {/* ADMIN TOP BAR */}
@@ -483,7 +472,7 @@ export default function Admin() {
           <div className="admin-user-info">
             <span>💼 Вхід виконано як: <strong>{currentUser?.email}</strong></span>
           </div>
-          <div style={{ display: 'flex', gap: '12px' }}>
+          <div className="admin-header-actions">
             <button className="btn btn-outline logout-btn" onClick={handleSeedProducts}>
               Seed 20 товарів
             </button>
@@ -494,18 +483,16 @@ export default function Admin() {
         </div>
 
         {/* TABS BUTTONS */}
-        <div style={{ display: 'flex', gap: '12px', marginBottom: '30px', borderBottom: '1px solid var(--border-light)', paddingBottom: '12px' }}>
+        <div className="admin-tabs-container">
           <button 
-            className={`btn ${activeTab === 'orders' ? '' : 'btn-outline'}`} 
+            className={`btn ${activeTab === 'orders' ? '' : 'btn-outline'} admin-tab-btn`} 
             onClick={() => setActiveTab('orders')}
-            style={{ padding: '10px 20px' }}
           >
             📋 Замовлення ({orders.length})
           </button>
           <button 
-            className={`btn ${activeTab === 'products' ? '' : 'btn-outline'}`} 
+            className={`btn ${activeTab === 'products' ? '' : 'btn-outline'} admin-tab-btn`} 
             onClick={() => setActiveTab('products')}
-            style={{ padding: '10px 20px' }}
           >
             🍪 Каталог товарів ({products.length})
           </button>
@@ -527,23 +514,14 @@ export default function Admin() {
                       <div>
                         <span className="order-id">{order.id}</span>
                         {order.items.some(item => getItemPrice(item) < item.product.price) && (
-                          <span style={{ 
-                            marginLeft: '8px', 
-                            fontSize: '11px', 
-                            padding: '2px 6px', 
-                            backgroundColor: 'rgba(40, 167, 69, 0.15)', 
-                            color: '#28a745', 
-                            borderRadius: '4px', 
-                            fontWeight: 'bold',
-                            border: '1px solid rgba(40, 167, 69, 0.3)'
-                          }}>ОПТ</span>
+                          <span className="admin-order-wholesale-badge">ОПТ</span>
                         )}
                         <span className="order-date">
                           {new Date(order.createdAt).toLocaleString('uk-UA')}
                         </span>
                       </div>
                       
-                      <div style={{ display: 'flex', alignItems: 'center' }}>
+                      <div className="admin-order-status-row">
                         <span className={`order-status status-${order.status}`}>
                           {order.status === 'new' ? 'Нове' :
                            order.status === 'awaiting_payment' ? 'Очікує оплати' :
@@ -553,10 +531,9 @@ export default function Admin() {
                            order.status === 'completed' ? 'Виконано' : 'Скасовано'}
                         </span>
                         <select
-                          className="status-select"
+                          className="status-select admin-status-select"
                           value={order.status}
                           onChange={(e) => handleStatusChange(order.id, e.target.value as Order['status'])}
-                          style={{ marginLeft: '12px' }}
                         >
                           <option value="new">Нове</option>
                           <option value="awaiting_payment">Очікує оплати</option>
@@ -590,13 +567,12 @@ export default function Admin() {
                       </div>
 
                       <div className="order-items">
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                          <h4 style={{ margin: '0' }}>🛍️ Товари в замовленні:</h4>
+                        <div className="admin-order-items-header">
+                          <h4>🛍️ Товари в замовленні:</h4>
                           {editingOrderId !== order.id && (order.status === 'new' || order.status === 'awaiting_payment') && (
                             <button
                               onClick={() => startEditingOrder(order.id, order.items)}
-                              className="btn btn-outline"
-                              style={{ padding: '4px 8px', fontSize: '11px', height: 'auto', borderStyle: 'dashed' }}
+                              className="btn btn-outline admin-edit-items-btn"
                             >
                               ✏️ Редагувати склад
                             </button>
@@ -605,31 +581,31 @@ export default function Admin() {
 
                         {editingOrderId === order.id ? (
                           <>
-                            <ul style={{ listStyle: 'none', padding: '0', margin: '0' }}>
+                            <ul className="admin-editing-items-list">
                               {editingItems.map((item, idx) => (
-                                <li key={idx} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '13px', marginBottom: '8px', paddingBottom: '8px', borderBottom: '1px dashed var(--border-light)' }}>
-                                  <div style={{ flexGrow: 1, marginRight: '10px' }}>
-                                    <span style={{ fontWeight: '500', display: 'block', color: 'var(--text-main)' }}>{item.product.title}</span>
-                                    <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
+                                <li key={idx} className="admin-editing-item">
+                                  <div className="admin-editing-item-info">
+                                    <span className="admin-editing-item-title">{item.product.title}</span>
+                                    <span className="admin-editing-item-price">
                                       Ціна: {getItemPrice(item).toFixed(2)} грн / {item.product.unit || 'шт'}
                                       {getItemPrice(item) < item.product.price && (
-                                        <span style={{ color: '#28a745', fontWeight: 'bold', marginLeft: '6px' }}>(ОПТ)</span>
+                                        <span className="admin-editing-item-opt">(ОПТ)</span>
                                       )}
                                     </span>
                                   </div>
-                                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                  <div className="admin-editing-item-qty-wrapper">
                                     <input
                                       type="number"
                                       min="0.001"
                                       step="any"
                                       value={item.quantity === 0 ? '' : item.quantity}
                                       onChange={(e) => updateItemQuantity(idx, parseFloat(e.target.value) || 0)}
-                                      style={{ width: '70px', padding: '4px 6px', border: '1px solid var(--border-light)', borderRadius: 'var(--border-radius-sm)', fontSize: '13px', textAlign: 'center', backgroundColor: 'var(--bg-primary)', color: 'var(--text-main)' }}
+                                      className="admin-editing-qty-input"
                                     />
-                                    <span style={{ fontSize: '12px', color: 'var(--text-muted)', minWidth: '24px' }}>{item.product.unit || 'шт.'}</span>
+                                    <span className="admin-editing-unit">{item.product.unit || 'шт.'}</span>
                                     <button
                                       onClick={() => removeItemFromOrder(idx)}
-                                      style={{ border: 'none', background: 'none', color: '#dc3545', cursor: 'pointer', fontSize: '16px', padding: '4px' }}
+                                      className="admin-delete-item-btn"
                                       title="Видалити товар"
                                     >
                                       🗑️
@@ -639,17 +615,17 @@ export default function Admin() {
                               ))}
                             </ul>
 
-                            <div className="add-product-wrapper" style={{ marginTop: '16px', padding: '12px', border: '1px dashed var(--border-light)', borderRadius: 'var(--border-radius-sm)', backgroundColor: 'var(--bg-secondary)' }}>
-                              <span style={{ fontSize: '12px', fontWeight: '600', color: 'var(--text-main)', display: 'block', marginBottom: '8px' }}>➕ Додати товар до замовлення:</span>
+                            <div className="add-product-wrapper admin-add-item-box">
+                              <span className="admin-add-item-title">➕ Додати товар до замовлення:</span>
                               <input
                                 type="text"
                                 placeholder="Введіть назву для пошуку..."
                                 value={productSearchQuery}
                                 onChange={(e) => setProductSearchQuery(e.target.value)}
-                                style={{ width: '100%', padding: '8px', border: '1px solid var(--border-light)', borderRadius: 'var(--border-radius-sm)', fontSize: '13px', backgroundColor: 'var(--bg-primary)', color: 'var(--text-main)', boxSizing: 'border-box' }}
+                                className="admin-add-item-search"
                               />
                               {productSearchQuery.trim().length >= 1 && (
-                                <div className="search-results-dropdown" style={{ backgroundColor: 'var(--bg-primary)', border: '1px solid var(--border-light)', borderRadius: 'var(--border-radius-sm)', marginTop: '4px', maxHeight: '150px', overflowY: 'auto', zIndex: 10 }}>
+                                <div className="search-results-dropdown admin-add-item-dropdown">
                                   {(() => {
                                     const availableProducts = products.length > 0 ? products : (productsData as unknown as Product[]);
                                     const filtered = availableProducts.filter(p => p.title.toLowerCase().includes(productSearchQuery.toLowerCase()));
@@ -659,14 +635,13 @@ export default function Admin() {
                                           <div
                                             key={p.id}
                                             onClick={() => addItemToOrder(p)}
-                                            style={{ padding: '8px 12px', fontSize: '12px', cursor: 'pointer', borderBottom: '1px solid var(--border-light)', color: 'var(--text-main)' }}
-                                            className="search-result-item"
+                                            className="search-result-item admin-add-item-dropdown-item"
                                           >
                                             <strong>{p.title}</strong> — {p.price.toFixed(2)} грн / {p.unit || 'шт'}
                                           </div>
                                         ))}
                                         {filtered.length === 0 && (
-                                          <div style={{ padding: '8px 12px', fontSize: '12px', color: 'var(--text-muted)' }}>
+                                          <div className="admin-dropdown-no-results">
                                             Нічого не знайдено
                                           </div>
                                         )}
@@ -687,9 +662,9 @@ export default function Admin() {
                                    <span className="item-title">{item.product.title}</span>
                                    <span className="item-qty">
                                      {item.quantity} {item.product.unit || 'шт.'}
-                                     <span style={{ fontSize: '11px', color: 'var(--text-muted)', marginLeft: '6px' }}>
+                                     <span className="admin-item-badge-detail">
                                        ({currentPrice.toFixed(2)} грн / {item.product.unit || 'шт.'}
-                                       {isWholesale && <span style={{ color: '#28a745', fontWeight: 'bold', marginLeft: '4px' }}>ОПТ</span>})
+                                       {isWholesale && <span className="admin-item-badge-opt">ОПТ</span>})
                                      </span>
                                    </span>
                                    <span className="item-price">{(currentPrice * item.quantity).toFixed(2)} грн</span>
@@ -700,37 +675,35 @@ export default function Admin() {
                         )}
                       </div>
 
-                      <div className="admin-notes-wrapper" style={{ borderTop: '1px dashed var(--border-light)', paddingTop: '16px', marginTop: '16px' }}>
-                        <h4 style={{ margin: '0 0 8px 0', fontSize: '14px', color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <div className="admin-notes-wrapper admin-notes-section">
+                        <h4 className="admin-notes-title">
                           <span>📝</span> Нотатки адміністратора (службові):
                         </h4>
                         <AdminOrderNotes key={order.id + '-' + (order.adminNotes || '')} orderId={order.id} initialNotes={order.adminNotes || ''} />
                       </div>
                     </div>
 
-                     <div className="order-card-footer" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                     <div className="order-card-footer admin-order-card-footer">
                        {editingOrderId === order.id ? (
                          <>
                             <div>
                               <span className="total-label">Нова сума: </span>
-                              <span className="total-val" style={{ color: 'var(--accent)' }}>
+                              <span className="total-val admin-editing-total-val">
                                 {editingItems.reduce((sum, item) => sum + (getItemPrice(item) * item.quantity), 0).toFixed(2)} грн
                               </span>
                             </div>
-                           <div style={{ display: 'flex', gap: '8px' }}>
+                           <div className="admin-actions-row">
                              <button 
-                               className="btn" 
+                               className="btn admin-save-order-btn" 
                                onClick={() => saveOrderItems(order.id)}
                                disabled={isSavingOrder}
-                               style={{ padding: '6px 12px', fontSize: '12px', background: '#28a745', color: '#fff', border: 'none' }}
                              >
                                {isSavingOrder ? 'Збереження...' : '💾 Зберегти'}
                              </button>
                              <button 
-                               className="btn btn-outline" 
+                               className="btn btn-outline admin-btn-sm" 
                                onClick={cancelEditingOrder}
                                disabled={isSavingOrder}
-                               style={{ padding: '6px 12px', fontSize: '12px' }}
                              >
                                Скасувати
                              </button>
@@ -743,9 +716,8 @@ export default function Admin() {
                              <span className="total-val">{order.totalAmount.toFixed(2)} грн</span>
                            </div>
                            <button 
-                             className="btn btn-outline" 
+                             className="btn btn-outline admin-invoice-btn" 
                              onClick={() => window.open(`/order/${order.id}/invoice`, '_blank')}
-                             style={{ padding: '6px 12px', fontSize: '12px', borderColor: 'var(--accent)', color: 'var(--accent)' }}
                            >
                              📄 Рахунок-фактура
                            </button>
@@ -766,10 +738,10 @@ export default function Admin() {
         ) : (
           /* TAB 2: PRODUCTS CATALOG MANAGER (CRUD) */
           <>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px' }}>
+            <div className="admin-catalog-header">
               <div>
-                <h2 style={{ fontSize: '24px', margin: '0 0 6px 0' }}>Управління каталогом товарів</h2>
-                <p style={{ color: 'var(--text-muted)', margin: '0' }}>Додавання, редагування та видалення солодощів</p>
+                <h2 className="admin-catalog-title">Управління каталогом товарів</h2>
+                <p className="admin-catalog-subtitle">Додавання, редагування та видалення солодощів</p>
               </div>
               {!isProductFormOpen && (
                 <button className="btn" onClick={openCreateForm}>
@@ -780,11 +752,11 @@ export default function Admin() {
 
             {/* PRODUCT EDIT/ADD FORM */}
             {isProductFormOpen && (
-              <div className="admin-login-card" style={{ maxWidth: '100%', margin: '0 0 40px 0', padding: '32px' }}>
-                <h3 style={{ textAlign: 'left', marginBottom: '20px' }}>
+              <div className="admin-login-card admin-form-card">
+                <h3 className="admin-form-title">
                   {editingProduct ? '📝 Редагувати товар' : '＋ Додати новий товар'}
                 </h3>
-                <form onSubmit={handleSaveProduct} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+                <form onSubmit={handleSaveProduct} className="admin-product-form">
                   
                   <div className="form-group">
                     <label htmlFor="prod-sku">Артикул (SKU) *</label>
@@ -798,7 +770,7 @@ export default function Admin() {
 
                   <div className="form-group">
                     <label htmlFor="prod-category">Категорія *</label>
-                    <select id="prod-category" value={category} onChange={(e) => setCategory(e.target.value)} style={{ width: '100%', padding: '10px 14px', borderRadius: 'var(--border-radius-sm)', border: '1px solid var(--border-light)', backgroundColor: 'var(--bg-primary)', color: 'var(--text-main)' }}>
+                    <select id="prod-category" value={category} onChange={(e) => setCategory(e.target.value)} className="admin-select-input">
                       {CATEGORIES.map(cat => (
                         <option key={cat} value={cat}>{cat}</option>
                       ))}
@@ -831,31 +803,31 @@ export default function Admin() {
                   </div>
 
                   <div className="form-group">
-                    <label htmlFor="prod-wholesale-price">Гуртова ціна (UAH) <span style={{ color: 'var(--text-muted)', fontSize: '11px' }}>(порожньо = без опту)</span></label>
+                    <label htmlFor="prod-wholesale-price">Гуртова ціна (UAH) <span className="admin-label-note">(порожньо = без опту)</span></label>
                     <input id="prod-wholesale-price" type="number" min="0" step="any" value={wholesalePrice} onChange={(e) => setWholesalePrice(e.target.value)} placeholder="наприклад, 280.00" />
                   </div>
 
                   <div className="form-group">
-                    <label htmlFor="prod-wholesale-qty">Мін. кількість для гурту <span style={{ color: 'var(--text-muted)', fontSize: '11px' }}>(порожньо = без опту)</span></label>
+                    <label htmlFor="prod-wholesale-qty">Мін. кількість для гурту <span className="admin-label-note">(порожньо = без опту)</span></label>
                     <input id="prod-wholesale-qty" type="number" min="1" step="1" value={wholesaleMinQty} onChange={(e) => setWholesaleMinQty(e.target.value)} placeholder="наприклад, 24" />
                   </div>
 
-                  <div className="form-group" style={{ gridColumn: 'span 2' }}>
+                  <div className="form-group grid-span-2">
                     <label htmlFor="prod-image">Посилання на фото</label>
                     <input id="prod-image" type="text" value={image} onChange={(e) => setImage(e.target.value)} placeholder="необов'язково" />
                   </div>
 
-                  <div className="form-group" style={{ gridColumn: 'span 2' }}>
+                  <div className="form-group grid-span-2">
                     <label htmlFor="prod-desc">Опис товару</label>
-                    <textarea id="prod-desc" rows={3} value={description} onChange={(e) => setDescription(e.target.value)} placeholder="необов'язково" style={{ width: '100%', padding: '10px 14px', borderRadius: 'var(--border-radius-sm)', border: '1px solid var(--border-light)', backgroundColor: 'var(--bg-primary)', color: 'var(--text-main)', outline: 'none' }} />
+                    <textarea id="prod-desc" rows={3} value={description} onChange={(e) => setDescription(e.target.value)} placeholder="необов'язково" className="admin-textarea-input" />
                   </div>
 
-                  <div className="form-group" style={{ display: 'flex', alignItems: 'center', gap: '8px', gridColumn: 'span 2' }}>
-                    <input id="prod-stock" type="checkbox" checked={inStock} onChange={(e) => setInStock(e.target.checked)} style={{ width: 'auto' }} />
-                    <label htmlFor="prod-stock" style={{ display: 'inline', margin: '0' }}>Товар є в наявності</label>
+                  <div className="form-group admin-checkbox-row">
+                    <input id="prod-stock" type="checkbox" checked={inStock} onChange={(e) => setInStock(e.target.checked)} className="admin-checkbox-input" />
+                    <label htmlFor="prod-stock" className="admin-checkbox-label">Товар є в наявності</label>
                   </div>
 
-                  <div style={{ gridColumn: 'span 2', display: 'flex', gap: '12px', justifyContent: 'flex-end', marginTop: '10px' }}>
+                  <div className="admin-form-actions">
                     <button type="button" className="btn btn-outline" onClick={() => setIsProductFormOpen(false)}>
                       Скасувати
                     </button>
@@ -870,72 +842,63 @@ export default function Admin() {
 
             {/* PRODUCTS LIST TABLE */}
             {products.length > 0 ? (
-              <div style={{ overflowX: 'auto', backgroundColor: 'var(--bg-secondary)', borderRadius: 'var(--border-radius-md)', border: '1px solid var(--border-light)', boxShadow: 'var(--shadow-soft)' }}>
-                <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', minWidth: '800px' }}>
+              <div className="admin-table-container">
+                <table className="admin-table">
                   <thead>
-                    <tr style={{ borderBottom: '1px solid var(--border-light)', backgroundColor: 'rgba(60, 46, 43, 0.02)' }}>
-                      <th style={{ padding: '16px' }}>Фото</th>
-                      <th style={{ padding: '16px' }}>Код (SKU)</th>
-                      <th style={{ padding: '16px' }}>Назва</th>
-                      <th style={{ padding: '16px' }}>Категорія</th>
-                      <th style={{ padding: '16px' }}>Ціна</th>
-                      <th style={{ padding: '16px' }}>Гуртові умови</th>
-                      <th style={{ padding: '16px' }}>Од.</th>
-                      <th style={{ padding: '16px' }}>Характеристики</th>
-                      <th style={{ padding: '16px' }}>Статус</th>
-                      <th style={{ padding: '16px', textAlign: 'center' }}>Дії</th>
+                    <tr className="admin-table-header-row">
+                      <th>Фото</th>
+                      <th>Код (SKU)</th>
+                      <th>Назва</th>
+                      <th>Категорія</th>
+                      <th>Ціна</th>
+                      <th>Гуртові умови</th>
+                      <th>Од.</th>
+                      <th>Характеристики</th>
+                      <th>Статус</th>
+                      <th style={{ textAlign: 'center' }}>Дії</th>
                     </tr>
                   </thead>
                   <tbody>
                     {products.map(prod => (
-                      <tr key={prod.id} style={{ borderBottom: '1px solid var(--border-light)' }}>
-                        <td style={{ padding: '12px 16px' }}>
+                      <tr key={prod.id}>
+                        <td>
                           {prod.image && prod.image !== '#' ? (
-                            <img src={prod.image} alt={prod.title} style={{ width: '40px', height: '40px', objectFit: 'cover', borderRadius: '4px', border: '1px solid var(--border-light)' }} />
+                            <img src={prod.image} alt={prod.title} className="admin-table-product-img" />
                           ) : (
-                            <div style={{ width: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: 'var(--bg-primary)', borderRadius: '4px', border: '1px solid var(--border-light)', fontSize: '18px' }}>🍬</div>
+                            <div className="admin-table-product-placeholder">🍬</div>
                           )}
                         </td>
-                        <td style={{ padding: '12px 16px', fontWeight: '600', color: 'var(--accent-berry)' }}>{prod.sku}</td>
-                        <td style={{ padding: '12px 16px', fontWeight: '500' }}>{prod.title}</td>
-                        <td style={{ padding: '12px 16px', fontSize: '13px', color: 'var(--text-muted)' }}>{prod.category}</td>
-                        <td style={{ padding: '12px 16px', fontWeight: '700' }}>{prod.price.toFixed(2)} грн</td>
-                        <td style={{ padding: '12px 16px', fontSize: '13px' }}>
+                        <td className="admin-table-sku-cell">{prod.sku}</td>
+                        <td className="admin-table-title-cell">{prod.title}</td>
+                        <td className="admin-table-category-cell">{prod.category}</td>
+                        <td className="admin-table-price-cell">{prod.price.toFixed(2)} грн</td>
+                        <td>
                           {prod.wholesalePrice && prod.wholesaleMinQty ? (
-                            <span style={{ color: '#28a745', fontWeight: '600' }} title="Гуртова ціна та мін. об'єм">
+                            <span className="admin-table-wholesale-badge" title="Гуртова ціна та мін. об'єм">
                               {prod.wholesalePrice.toFixed(2)} грн (від {prod.wholesaleMinQty} {prod.unit || 'кг'})
                             </span>
                           ) : (
-                            <span style={{ color: 'var(--text-muted)' }}>—</span>
+                            <span className="admin-table-empty-cell">—</span>
                           )}
                         </td>
-                        <td style={{ padding: '12px 16px', fontSize: '13px', fontWeight: '600' }}>{prod.unit || 'кг'}</td>
-                        <td style={{ padding: '12px 16px', fontSize: '12px', color: 'var(--text-muted)' }}>
+                        <td className="admin-table-unit-cell">{prod.unit || 'кг'}</td>
+                        <td className="admin-table-specs-cell">
                           {prod.packageWeight && <div>📦 {prod.packageWeight}</div>}
                           {prod.shelfLife && <div>⏱️ {prod.shelfLife}</div>}
                           {prod.storageConditions && <div>🌡️ {prod.storageConditions}</div>}
                           {!prod.packageWeight && !prod.shelfLife && !prod.storageConditions && <span>—</span>}
                         </td>
-                        <td style={{ padding: '12px 16px' }}>
-                          <span style={{ 
-                            fontSize: '11px', 
-                            padding: '4px 8px', 
-                            borderRadius: '4px', 
-                            fontWeight: '600', 
-                            textTransform: 'uppercase',
-                            backgroundColor: prod.inStock ? 'rgba(40, 167, 69, 0.1)' : 'rgba(220, 53, 69, 0.1)',
-                            color: prod.inStock ? '#28a745' : '#dc3545',
-                            border: prod.inStock ? '1px solid rgba(40, 167, 69, 0.2)' : '1px solid rgba(220, 53, 69, 0.2)'
-                          }}>
+                        <td>
+                          <span className={`admin-status-badge ${prod.inStock ? 'in-stock' : 'out-of-stock'}`}>
                             {prod.inStock ? 'Є' : 'Немає'}
                           </span>
                         </td>
-                        <td style={{ padding: '12px 16px', textAlign: 'center' }}>
-                          <div style={{ display: 'flex', gap: '8px', justifyContent: 'center' }}>
-                            <button className="btn btn-outline" style={{ padding: '6px 12px', fontSize: '12px' }} onClick={() => openEditForm(prod)}>
+                        <td style={{ textAlign: 'center' }}>
+                          <div className="admin-actions-row">
+                            <button className="btn btn-outline admin-btn-sm" onClick={() => openEditForm(prod)}>
                               Редагувати
                             </button>
-                            <button className="btn btn-outline" style={{ padding: '6px 12px', fontSize: '12px', borderColor: '#dc3545', color: '#dc3545' }} onClick={() => handleDeleteProduct(prod.id)}>
+                            <button className="btn btn-outline admin-btn-sm admin-delete-product-btn" onClick={() => handleDeleteProduct(prod.id)}>
                               Видалити
                             </button>
                           </div>
@@ -948,13 +911,12 @@ export default function Admin() {
             ) : (
               <div className="no-orders">
                 <span className="no-orders-icon">🍪</span>
-                <h3>Каталог порожній</h3>
-                <p>Натисніть кнопку "Seed 20 товарів" у верхній панелі, щоб автоматично заповнити каталог початковими товарами з файлу.</p>
+                <h3>Каталог товарів порожній</h3>
+                <p>Натисніть кнопку "Seed 20 товарів" вгорі або додайте товар вручну.</p>
               </div>
             )}
           </>
         )}
-
       </div>
     </section>
     </>

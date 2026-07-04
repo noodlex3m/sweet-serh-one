@@ -1,0 +1,36 @@
+/* Home Page Styles */
+
+.product-footer-container {
+  margin-top: auto;
+  padding-top: 12px;
+  border-top: 1px solid var(--border-light);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.product-price-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.product-price-value {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--text-main);
+}
+
+.product-price-unit {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+.wholesale-promo-badge {
+  font-size: 11px;
+  color: #28a745;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
