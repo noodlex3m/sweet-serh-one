@@ -7,6 +7,8 @@ export interface Product {
 	category: string;
 	image?: string; // URL зображення товару
 	inStock: boolean; // чи є товар у наявності
+	wholesalePrice?: number; // оптова ціна за шт.
+	wholesaleMinQty?: number; // мін. кількість для опту (наприклад, 24 шт.)
 	unit?: string; // Одиниця виміру (кг, шт, уп, блок тощо)
 	shelfLife?: string; // Термін зберігання
 	storageConditions?: string; // Умови зберігання

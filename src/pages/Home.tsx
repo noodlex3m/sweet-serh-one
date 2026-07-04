@@ -207,10 +207,19 @@ export default function Home({
                           </div>
                         )}
 
-                        <div className="product-footer">
+                        <div className="product-footer" style={{ marginTop: 'auto', paddingTop: '12px', borderTop: '1px solid var(--border-light)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                           <div className="product-price">
-                            <span className="price-val">{product.price.toFixed(2)}</span>
-                            <span className="price-currency"> грн/{product.unit || 'кг'}</span>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                              <div>
+                                <span className="price-val" style={{ fontSize: '1.2rem', fontWeight: '700', color: 'var(--text-main)' }}>{product.price.toFixed(2)}</span>
+                                <span className="price-currency" style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}> грн/{product.unit || 'кг'}</span>
+                              </div>
+                              {product.wholesalePrice && product.wholesalePrice > 0 && product.wholesaleMinQty && product.wholesaleMinQty > 0 && (
+                                <div className="wholesale-promo-badge" style={{ fontSize: '11px', color: '#28a745', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '2px' }}>
+                                  <span>🏷️ Опт: {product.wholesalePrice.toFixed(2)} грн (від {product.wholesaleMinQty} {product.unit || 'кг'})</span>
+                                </div>
+                              )}
+                            </div>
                           </div>
                           <button 
                             className="btn btn-sm"

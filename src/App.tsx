@@ -15,6 +15,7 @@ import Admin from "./pages/Admin";
 import Account from "./pages/Account";
 import Invoice from "./pages/Invoice";
 import DevNotice from "./components/DevNotice";
+import { getItemPrice } from "./utils/pricing";
 
 function App() {
 	const { currentUser } = useAuth();
@@ -203,10 +204,15 @@ function App() {
 	const cartTotals = useMemo(() => {
 		const quantity = cart.reduce((acc, item) => acc + item.quantity, 0);
 		const amount = cart.reduce(
+			(acc, item) => acc + getItemPrice(item) * item.quantity,
+			0,
+		);
+		const retailAmount = cart.reduce(
 			(acc, item) => acc + item.product.price * item.quantity,
 			0,
 		);
-		return { quantity, amount };
+		const savings = retailAmount - amount;
+		return { quantity, amount, savings };
 	}, [cart]);
 
 	// Cart actions
@@ -512,9 +518,25 @@ function App() {
 												/>
 												<div className="cart-item-details">
 													<h4>{item.product.title}</h4>
-													<span className="cart-item-price">
-														{item.product.price.toFixed(2)} грн
-													</span>
+													<div className="cart-item-price-wrapper" style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '4px', marginBottom: '6px' }}>
+														{getItemPrice(item) < item.product.price ? (
+															<>
+																<span className="cart-item-price retail-crossed" style={{ textDecoration: 'line-through', fontSize: '12px', color: 'var(--text-muted)' }}>
+																	{item.product.price.toFixed(2)} грн
+																</span>
+																<span className="cart-item-price wholesale-active" style={{ color: '#28a745', fontWeight: '700' }}>
+																	{getItemPrice(item).toFixed(2)} грн
+																</span>
+																<span className="wholesale-badge" style={{ fontSize: '10px', padding: '1px 4px', background: 'rgba(40, 167, 69, 0.1)', color: '#28a745', borderRadius: '4px', textTransform: 'uppercase', fontWeight: 'bold' }}>
+																	Опт
+																</span>
+															</>
+														) : (
+															<span className="cart-item-price">
+																{item.product.price.toFixed(2)} грн
+															</span>
+														)}
+													</div>
 													<div className="cart-item-controls">
 														<button
 															onClick={() =>
@@ -758,6 +780,12 @@ function App() {
 												<span>Всього товарів:</span>
 												<span>{cartTotals.quantity} шт.</span>
 											</div>
+											{cartTotals.savings > 0 && (
+												<div className="totals-row savings-row" style={{ color: '#28a745', fontWeight: '600' }}>
+													<span>Заощаджено на опті:</span>
+													<span>-{cartTotals.savings.toFixed(2)} грн</span>
+												</div>
+											)}
 											<div className="totals-row grand-total">
 												<span>До сплати:</span>
 												<span>{cartTotals.amount.toFixed(2)} грн</span>

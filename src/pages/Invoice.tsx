@@ -4,6 +4,7 @@ import { doc, getDoc } from 'firebase/firestore';
 import { db } from '../services/firebase';
 import { useAuth } from '../context/AuthContext';
 import type { Order } from '../types';
+import { getItemPrice } from '../utils/pricing';
 
 // Helper to convert number to Ukrainian words for the invoice
 function numberToUkrainianWords(num: number): string {
@@ -314,6 +315,7 @@ export default function Invoice() {
           <tbody>
             {order.items.map((item, idx) => {
               const p = item.product;
+              const priceApplied = getItemPrice(item);
               return (
                 <tr key={idx}>
                   <td style={{ border: '1px solid #000', padding: '6px', textAlign: 'center' }}>{idx + 1}</td>
@@ -323,9 +325,9 @@ export default function Invoice() {
                   </td>
                   <td style={{ border: '1px solid #000', padding: '6px', textAlign: 'center' }}>{p.unit || 'шт.'}</td>
                   <td style={{ border: '1px solid #000', padding: '6px', textAlign: 'center' }}>{item.quantity}</td>
-                  <td style={{ border: '1px solid #000', padding: '6px', textAlign: 'right' }}>{p.price.toFixed(2)}</td>
+                  <td style={{ border: '1px solid #000', padding: '6px', textAlign: 'right' }}>{priceApplied.toFixed(2)}</td>
                   <td style={{ border: '1px solid #000', padding: '6px', textAlign: 'right' }}>
-                    {(p.price * item.quantity).toFixed(2)}
+                    {(priceApplied * item.quantity).toFixed(2)}
                   </td>
                 </tr>
               );

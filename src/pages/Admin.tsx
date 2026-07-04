@@ -4,6 +4,7 @@ import { db } from '../services/firebase';
 import { collection, query, orderBy, onSnapshot, updateDoc, doc, addDoc, deleteDoc, setDoc } from 'firebase/firestore';
 import type { Order, Product, CartItem } from '../types';
 import productsData from '../data/products.json';
+import { getItemPrice } from '../utils/pricing';
 
 const CATEGORIES = [
   'Печиво та пряники',
@@ -118,6 +119,8 @@ export default function Admin() {
   const [shelfLife, setShelfLife] = useState('');
   const [storageConditions, setStorageConditions] = useState('');
   const [packageWeight, setPackageWeight] = useState('');
+  const [wholesalePrice, setWholesalePrice] = useState<string>('');
+  const [wholesaleMinQty, setWholesaleMinQty] = useState<string>('');
   const [isSavingProduct, setIsSavingProduct] = useState(false);
 
   // Check if current user is admin
@@ -199,6 +202,20 @@ export default function Admin() {
         for (const prod of tempProducts) {
           const { id, ...prodWithoutId } = prod;
           const typedProd = prodWithoutId as unknown as Product;
+          let wPrice = typedProd.wholesalePrice;
+          let wMinQty = typedProd.wholesaleMinQty;
+
+          // Automatically add wholesale prices to some items for demonstration
+          if (!wPrice && !wMinQty) {
+            if (typedProd.sku === 'SW_11' || typedProd.sku === 'SW-11' || typedProd.title.includes('Вафлі')) {
+              wPrice = Math.round(typedProd.price * 0.8 * 100) / 100; // 20% discount
+              wMinQty = 24; // starting from 24 units
+            } else if (typedProd.sku === 'SW_1' || typedProd.sku === 'SW-1' || typedProd.title.includes('Печиво')) {
+              wPrice = Math.round(typedProd.price * 0.85 * 100) / 100; // 15% discount
+              wMinQty = 10; // starting from 10 units
+            }
+          }
+
           const productData = {
             sku: typedProd.sku,
             title: typedProd.title,
@@ -210,7 +227,9 @@ export default function Admin() {
             unit: typedProd.unit || 'кг',
             shelfLife: typedProd.shelfLife || '',
             storageConditions: typedProd.storageConditions || '',
-            packageWeight: typedProd.packageWeight || ''
+            packageWeight: typedProd.packageWeight || '',
+            ...(wPrice !== undefined && wPrice !== null ? { wholesalePrice: wPrice } : {}),
+            ...(wMinQty !== undefined && wMinQty !== null ? { wholesaleMinQty: wMinQty } : {})
           };
           await setDoc(doc(db, 'products', id), productData);
         }
@@ -248,6 +267,8 @@ export default function Admin() {
     setShelfLife('');
     setStorageConditions('');
     setPackageWeight('');
+    setWholesalePrice('');
+    setWholesaleMinQty('');
     setIsProductFormOpen(true);
   };
 
@@ -265,6 +286,8 @@ export default function Admin() {
     setShelfLife(product.shelfLife || '');
     setStorageConditions(product.storageConditions || '');
     setPackageWeight(product.packageWeight || '');
+    setWholesalePrice(product.wholesalePrice !== undefined && product.wholesalePrice !== null ? String(product.wholesalePrice) : '');
+    setWholesaleMinQty(product.wholesaleMinQty !== undefined && product.wholesaleMinQty !== null ? String(product.wholesaleMinQty) : '');
     setIsProductFormOpen(true);
   };
 
@@ -273,6 +296,9 @@ export default function Admin() {
     e.preventDefault();
     if (!isAdmin) return;
     setIsSavingProduct(true);
+
+    const wPrice = wholesalePrice.trim();
+    const wMinQty = wholesaleMinQty.trim();
 
     const productData = {
       sku,
@@ -285,7 +311,9 @@ export default function Admin() {
       unit: unit.trim() || 'кг',
       shelfLife: shelfLife.trim() || '',
       storageConditions: storageConditions.trim() || '',
-      packageWeight: packageWeight.trim() || ''
+      packageWeight: packageWeight.trim() || '',
+      ...(wPrice !== '' ? { wholesalePrice: Number(wPrice) } : {}),
+      ...(wMinQty !== '' ? { wholesaleMinQty: Number(wMinQty) } : {})
     };
 
     try {
@@ -377,7 +405,7 @@ export default function Admin() {
     }
     setIsSavingOrder(true);
     try {
-      const totalAmount = editingItems.reduce((sum, item) => sum + item.product.price * item.quantity, 0);
+      const totalAmount = editingItems.reduce((sum, item) => sum + getItemPrice(item) * item.quantity, 0);
       const orderRef = doc(db, 'orders', orderId);
       await updateDoc(orderRef, {
         items: editingItems,
@@ -498,6 +526,18 @@ export default function Admin() {
                     <div className="order-card-header">
                       <div>
                         <span className="order-id">{order.id}</span>
+                        {order.items.some(item => getItemPrice(item) < item.product.price) && (
+                          <span style={{ 
+                            marginLeft: '8px', 
+                            fontSize: '11px', 
+                            padding: '2px 6px', 
+                            backgroundColor: 'rgba(40, 167, 69, 0.15)', 
+                            color: '#28a745', 
+                            borderRadius: '4px', 
+                            fontWeight: 'bold',
+                            border: '1px solid rgba(40, 167, 69, 0.3)'
+                          }}>ОПТ</span>
+                        )}
                         <span className="order-date">
                           {new Date(order.createdAt).toLocaleString('uk-UA')}
                         </span>
@@ -570,7 +610,12 @@ export default function Admin() {
                                 <li key={idx} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '13px', marginBottom: '8px', paddingBottom: '8px', borderBottom: '1px dashed var(--border-light)' }}>
                                   <div style={{ flexGrow: 1, marginRight: '10px' }}>
                                     <span style={{ fontWeight: '500', display: 'block', color: 'var(--text-main)' }}>{item.product.title}</span>
-                                    <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>Ціна: {item.product.price.toFixed(2)} грн / {item.product.unit || 'шт'}</span>
+                                    <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
+                                      Ціна: {getItemPrice(item).toFixed(2)} грн / {item.product.unit || 'шт'}
+                                      {getItemPrice(item) < item.product.price && (
+                                        <span style={{ color: '#28a745', fontWeight: 'bold', marginLeft: '6px' }}>(ОПТ)</span>
+                                      )}
+                                    </span>
                                   </div>
                                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                                     <input
@@ -633,15 +678,25 @@ export default function Admin() {
                             </div>
                           </>
                         ) : (
-                          <ul>
-                            {order.items.map((item: CartItem, idx: number) => (
-                              <li key={idx}>
-                                <span className="item-title">{item.product.title}</span>
-                                <span className="item-qty">{item.quantity} {item.product.unit || 'шт.'}</span>
-                                <span className="item-price">{(item.product.price * item.quantity).toFixed(2)} грн</span>
-                              </li>
-                            ))}
-                          </ul>
+                           <ul>
+                             {order.items.map((item: CartItem, idx: number) => {
+                               const currentPrice = getItemPrice(item);
+                               const isWholesale = currentPrice < item.product.price;
+                               return (
+                                 <li key={idx}>
+                                   <span className="item-title">{item.product.title}</span>
+                                   <span className="item-qty">
+                                     {item.quantity} {item.product.unit || 'шт.'}
+                                     <span style={{ fontSize: '11px', color: 'var(--text-muted)', marginLeft: '6px' }}>
+                                       ({currentPrice.toFixed(2)} грн / {item.product.unit || 'шт.'}
+                                       {isWholesale && <span style={{ color: '#28a745', fontWeight: 'bold', marginLeft: '4px' }}>ОПТ</span>})
+                                     </span>
+                                   </span>
+                                   <span className="item-price">{(currentPrice * item.quantity).toFixed(2)} грн</span>
+                                 </li>
+                               );
+                             })}
+                           </ul>
                         )}
                       </div>
 
@@ -656,12 +711,12 @@ export default function Admin() {
                      <div className="order-card-footer" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                        {editingOrderId === order.id ? (
                          <>
-                           <div>
-                             <span className="total-label">Нова сума: </span>
-                             <span className="total-val" style={{ color: 'var(--accent)' }}>
-                               {editingItems.reduce((sum, item) => sum + (item.product.price * item.quantity), 0).toFixed(2)} грн
-                             </span>
-                           </div>
+                            <div>
+                              <span className="total-label">Нова сума: </span>
+                              <span className="total-val" style={{ color: 'var(--accent)' }}>
+                                {editingItems.reduce((sum, item) => sum + (getItemPrice(item) * item.quantity), 0).toFixed(2)} грн
+                              </span>
+                            </div>
                            <div style={{ display: 'flex', gap: '8px' }}>
                              <button 
                                className="btn" 
@@ -775,6 +830,16 @@ export default function Admin() {
                     <input id="prod-storage" type="text" value={storageConditions} onChange={(e) => setStorageConditions(e.target.value)} placeholder="наприклад, від +15°С до +21°С" />
                   </div>
 
+                  <div className="form-group">
+                    <label htmlFor="prod-wholesale-price">Гуртова ціна (UAH) <span style={{ color: 'var(--text-muted)', fontSize: '11px' }}>(порожньо = без опту)</span></label>
+                    <input id="prod-wholesale-price" type="number" min="0" step="any" value={wholesalePrice} onChange={(e) => setWholesalePrice(e.target.value)} placeholder="наприклад, 280.00" />
+                  </div>
+
+                  <div className="form-group">
+                    <label htmlFor="prod-wholesale-qty">Мін. кількість для гурту <span style={{ color: 'var(--text-muted)', fontSize: '11px' }}>(порожньо = без опту)</span></label>
+                    <input id="prod-wholesale-qty" type="number" min="1" step="1" value={wholesaleMinQty} onChange={(e) => setWholesaleMinQty(e.target.value)} placeholder="наприклад, 24" />
+                  </div>
+
                   <div className="form-group" style={{ gridColumn: 'span 2' }}>
                     <label htmlFor="prod-image">Посилання на фото</label>
                     <input id="prod-image" type="text" value={image} onChange={(e) => setImage(e.target.value)} placeholder="необов'язково" />
@@ -814,6 +879,7 @@ export default function Admin() {
                       <th style={{ padding: '16px' }}>Назва</th>
                       <th style={{ padding: '16px' }}>Категорія</th>
                       <th style={{ padding: '16px' }}>Ціна</th>
+                      <th style={{ padding: '16px' }}>Гуртові умови</th>
                       <th style={{ padding: '16px' }}>Од.</th>
                       <th style={{ padding: '16px' }}>Характеристики</th>
                       <th style={{ padding: '16px' }}>Статус</th>
@@ -834,6 +900,15 @@ export default function Admin() {
                         <td style={{ padding: '12px 16px', fontWeight: '500' }}>{prod.title}</td>
                         <td style={{ padding: '12px 16px', fontSize: '13px', color: 'var(--text-muted)' }}>{prod.category}</td>
                         <td style={{ padding: '12px 16px', fontWeight: '700' }}>{prod.price.toFixed(2)} грн</td>
+                        <td style={{ padding: '12px 16px', fontSize: '13px' }}>
+                          {prod.wholesalePrice && prod.wholesaleMinQty ? (
+                            <span style={{ color: '#28a745', fontWeight: '600' }} title="Гуртова ціна та мін. об'єм">
+                              {prod.wholesalePrice.toFixed(2)} грн (від {prod.wholesaleMinQty} {prod.unit || 'кг'})
+                            </span>
+                          ) : (
+                            <span style={{ color: 'var(--text-muted)' }}>—</span>
+                          )}
+                        </td>
                         <td style={{ padding: '12px 16px', fontSize: '13px', fontWeight: '600' }}>{prod.unit || 'кг'}</td>
                         <td style={{ padding: '12px 16px', fontSize: '12px', color: 'var(--text-muted)' }}>
                           {prod.packageWeight && <div>📦 {prod.packageWeight}</div>}
