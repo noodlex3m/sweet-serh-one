@@ -334,11 +334,11 @@ export default function Invoice() {
             })}
             
             {/* Totals Row */}
-            <tr className="totals-row">
+            <tr className="invoice-totals-row">
               <td colSpan={5} className="cell-right">Разом без ПДВ:</td>
               <td className="cell-right">{order.totalAmount.toFixed(2)}</td>
             </tr>
-            <tr className="totals-row">
+            <tr className="invoice-totals-row">
               <td colSpan={5} className="cell-right">ПДВ:</td>
               <td className="cell-right">0.00</td>
             </tr>

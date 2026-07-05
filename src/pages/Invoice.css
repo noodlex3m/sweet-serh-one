@@ -259,7 +259,7 @@
   display: block;
 }
 
-.invoice-items-table tr.totals-row td {
+.invoice-items-table tr.invoice-totals-row td {
   font-weight: bold;
 }
 
