@@ -14,6 +14,7 @@ import Home from "./pages/Home";
 import Admin from "./pages/Admin";
 import Account from "./pages/Account";
 import Invoice from "./pages/Invoice";
+import QuickOrder from "./pages/QuickOrder";
 import DevNotice from "./components/DevNotice";
 import { getItemPrice } from "./utils/pricing";
 
@@ -231,6 +232,35 @@ function App() {
 		setIsCartOpen(true);
 	};
 
+	const addMultipleToCart = (itemsToAdd: { product: Product; quantity: number }[]) => {
+		setCart((prev) => {
+			const updated = [...prev];
+			for (const { product, quantity } of itemsToAdd) {
+				const existingIdx = updated.findIndex((item) => item.product.id === product.id);
+				if (existingIdx > -1) {
+					updated[existingIdx] = {
+						...updated[existingIdx],
+						quantity: updated[existingIdx].quantity + quantity
+					};
+				} else {
+					updated.push({ product, quantity });
+				}
+			}
+			return updated;
+		});
+		setIsCartOpen(true);
+	};
+
+	// Auto open cart if url has query param ?openCart=true
+	useEffect(() => {
+		const params = new URLSearchParams(location.search);
+		if (params.get("openCart") === "true") {
+			setIsCartOpen(true);
+			// Clean up the URL parameter without reloading
+			window.history.replaceState({}, document.title, window.location.pathname);
+		}
+	}, [location]);
+
 	const updateQuantity = (productId: string, delta: number) => {
 		setCart((prev) => {
 			return prev
@@ -355,6 +385,12 @@ function App() {
 								🛍️ Магазин
 							</Link>
 							<Link
+								className={`nav-mode-btn ${location.pathname === "/quick-order" ? "active" : ""}`}
+								to="/quick-order"
+							>
+								📋 Швидке замовлення
+							</Link>
+							<Link
 								className={`nav-mode-btn ${location.pathname === "/account" ? "active" : ""}`}
 								to="/account"
 							>
@@ -405,6 +441,15 @@ function App() {
 				<Route path="/admin" element={<Admin />} />
 				<Route path="/account" element={<Account />} />
 				<Route path="/order/:orderId/invoice" element={<Invoice />} />
+				<Route
+					path="/quick-order"
+					element={
+						<QuickOrder
+							products={products}
+							addMultipleToCart={addMultipleToCart}
+						/>
+					}
+				/>
 			</Routes>
 
 			{/* FOOTER */}
