@@ -500,3 +500,67 @@
   border-bottom: 1px solid var(--border-light);
   padding-bottom: 12px;
 }
+
+/* Admin Orders Toolbar styles */
+.admin-toolbar-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.admin-toolbar-filter-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.admin-toolbar-filter-label {
+  font-weight: 500;
+  font-size: 14px;
+  margin: 0;
+  color: var(--text-main);
+}
+
+.admin-toolbar-select {
+  width: 180px;
+  padding: 6px 10px;
+  font-size: 13px;
+}
+
+.admin-toolbar-export-group {
+  display: flex;
+  gap: 10px;
+}
+
+.admin-toolbar-btn-detailed {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  padding: 8px 16px;
+}
+
+.admin-toolbar-btn-picklist {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  padding: 8px 16px;
+  border-color: #28a745;
+  color: #28a745;
+}
+
+.admin-toolbar-btn-picklist:hover {
+  background-color: rgba(40, 167, 69, 0.05);
+}
+
+.admin-toolbar-btn-picklist:disabled,
+.admin-toolbar-btn-detailed:disabled {
+  border-color: var(--border-light);
+  color: var(--text-muted);
+  cursor: not-allowed;
+  background: none;
+}

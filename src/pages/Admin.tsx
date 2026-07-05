@@ -5,6 +5,7 @@ import { collection, query, orderBy, onSnapshot, updateDoc, doc, addDoc, deleteD
 import type { Order, Product, CartItem } from '../types';
 import productsData from '../data/products.json';
 import { getItemPrice } from '../utils/pricing';
+import { exportDetailedOrdersToExcel, exportPickListToExcel } from '../utils/excelExport';
 import './Admin.css';
 
 const CATEGORIES = [
@@ -78,6 +79,9 @@ export default function Admin() {
 
   // Orders state
   const [orders, setOrders] = useState<Order[]>([]);
+  
+  // Status filter state
+  const [statusFilter, setStatusFilter] = useState<string>('all');
 
   // Products state
   const [products, setProducts] = useState<Product[]>([]);
@@ -410,6 +414,12 @@ export default function Admin() {
     }
   };
 
+  // Filter orders by selected status
+  const filteredOrders = orders.filter(order => {
+    if (statusFilter === 'all') return true;
+    return order.status === statusFilter;
+  });
+
   if (!isAdmin) {
     /* ADMIN LOGIN PAGE */
     return (
@@ -506,9 +516,49 @@ export default function Admin() {
               <p className="section-subtitle">Керування замовленнями в реальному часі через Firebase Firestore</p>
             </div>
 
-            {orders.length > 0 ? (
+            {/* Filter & Export Excel Toolbar */}
+            <div className="admin-toolbar-row">
+              <div className="admin-toolbar-filter-group">
+                <label htmlFor="status-filter" className="admin-toolbar-filter-label">Фільтр статусів:</label>
+                <select
+                  id="status-filter"
+                  value={statusFilter}
+                  onChange={(e) => setStatusFilter(e.target.value)}
+                  className="admin-select-input admin-toolbar-select"
+                >
+                  <option value="all">Всі замовлення ({orders.length})</option>
+                  <option value="new">Нові ({orders.filter(o => o.status === 'new').length})</option>
+                  <option value="awaiting_payment">Очікують оплати ({orders.filter(o => o.status === 'awaiting_payment').length})</option>
+                  <option value="paid">Оплачені ({orders.filter(o => o.status === 'paid').length})</option>
+                  <option value="processing">В роботі ({orders.filter(o => o.status === 'processing').length})</option>
+                  <option value="shipped">Відправлені ({orders.filter(o => o.status === 'shipped').length})</option>
+                  <option value="completed">Виконані ({orders.filter(o => o.status === 'completed').length})</option>
+                  <option value="cancelled">Скасовані ({orders.filter(o => o.status === 'cancelled').length})</option>
+                </select>
+              </div>
+              <div className="admin-toolbar-export-group">
+                <button 
+                  onClick={() => exportDetailedOrdersToExcel(filteredOrders)} 
+                  className="btn btn-outline admin-toolbar-btn-detailed"
+                  disabled={filteredOrders.length === 0}
+                  title="Експортувати кожну позицію замовлень окремим рядком"
+                >
+                  📥 Детальний Excel ({filteredOrders.length})
+                </button>
+                <button 
+                  onClick={() => exportPickListToExcel(filteredOrders)} 
+                  className="btn btn-outline admin-toolbar-btn-picklist"
+                  disabled={filteredOrders.length === 0}
+                  title="Звести однакові товари докупи для збирання на складі"
+                >
+                  📦 Зведений Pick-List ({filteredOrders.length})
+                </button>
+              </div>
+            </div>
+
+            {filteredOrders.length > 0 ? (
               <div className="orders-list">
-                {orders.map(order => (
+                {filteredOrders.map(order => (
                   <div key={order.id} className="order-card">
                     <div className="order-card-header">
                       <div>
@@ -730,8 +780,8 @@ export default function Admin() {
             ) : (
               <div className="no-orders">
                 <span className="no-orders-icon">📂</span>
-                <h3>Замовлень ще немає</h3>
-                <p>Коли клієнти оформлять замовлення на сайті, вони з'являться тут у реальному часі.</p>
+                <h3>Замовлень не знайдено</h3>
+                <p>{statusFilter === 'all' ? 'Коли клієнти оформлять замовлення на сайті, вони з\'являться тут у реальному часі.' : 'Немає замовлень із вибраним статусом.'}</p>
               </div>
             )}
           </>
@@ -784,7 +834,7 @@ export default function Admin() {
 
                   <div className="form-group">
                     <label htmlFor="prod-unit">Одиниця виміру *</label>
-                    <input id="prod-unit" type="text" required value={unit} onChange={(e) => setUnit(e.target.value)} placeholder="кг, шт, уп, блок тощо" />
+                    <input id="prod-unit" type="text" required value={unit} onChange={(e) => setUnit(e.target.value)} placeholder="кг, шт, уп, block тощо" />
                   </div>
 
                   <div className="form-group">
